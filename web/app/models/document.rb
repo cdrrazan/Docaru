@@ -81,12 +81,14 @@ class Document < ApplicationRecord
 
   def severity = SEVERITY.fetch(status, 5)
 
-  def <=>(other)
-    [ severity, start_by || expires_on ] <=> [ other.severity, other.start_by || other.expires_on ]
-  end
-  include Comparable
+  # Deliberately a sort key rather than <=> plus Comparable. Comparable defines
+  # ==, which would replace ActiveRecord's identity comparison and blow up on
+  # any comparison against nil or a non-Document — including the ones Rails
+  # makes internally.
+  def sort_key = [ severity, start_by || expires_on ]
 
   def schedule = ReminderSchedule.new(self)
+  def chain = PrerequisiteChain.new(self)
 
   private
 

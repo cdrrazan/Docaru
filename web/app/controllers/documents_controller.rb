@@ -7,6 +7,7 @@ class DocumentsController < ApplicationController
     @resolved = @document.resolved
     @timeline = @document.timeline
     @schedule = @document.schedule
+    @chain = @document.chain
   end
 
   def new

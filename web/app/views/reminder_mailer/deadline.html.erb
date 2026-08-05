@@ -49,6 +49,19 @@
       </div>
     <% end %>
 
+    <% @chain.blocking.each do |link| %>
+      <div style="background:#fbeeee; border:1px solid #dda9a9; border-radius:6px; padding:.85rem 1rem; margin:1rem 0;">
+        <p style="margin:0 0 .3rem; font-weight:600;">Blocked by another document</p>
+        <p style="margin:0;">
+          <%= link.document.title %>
+          <%= link.status == :expires_first ?
+                "expires #{link.document.expires_on.strftime("%-d %B %Y")}, before this renewal needs it" :
+                "has to be renewed by #{link.document.start_by.strftime("%-d %B %Y")}, which comes first" %>.
+          Renew that one first, or this renewal cannot proceed.
+        </p>
+      </div>
+    <% end %>
+
     <% unless @timeline.feasible? %>
       <div style="background:#fbeeee; border:1px solid #dda9a9; border-radius:6px; padding:.85rem 1rem; margin:1rem 0;">
         <p style="margin:0;">

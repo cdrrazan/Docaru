@@ -1,0 +1,50 @@
+<% if chain.any? %>
+  <section>
+    <h2>What this renewal depends on</h2>
+    <p class="note">
+      Some renewals are blocked by other documents. These are tracked as a chain, so a lapse in one
+      shows up against the other before it becomes a problem.
+    </p>
+
+    <ul class="docs">
+      <% chain.links.each do |link| %>
+        <li>
+          <strong><%= link.requirement["item"] %></strong>
+
+          <% case link.status %>
+          <% when :ok %>
+            <span class="tag tag-ok">In hand</span>
+            <div class="note">
+              <%= link_to link.document.title, document_path(link.document) %> is valid until
+              <%= link.document.expires_on.strftime("%-d %B %Y") %>, past the date you need it.
+            </div>
+
+          <% when :expires_first %>
+            <span class="tag tag-warn">Blocks this renewal</span>
+            <div class="note">
+              <%= link_to link.document.title, document_path(link.document) %> expires
+              <%= link.document.expires_on.strftime("%-d %B %Y") %> — <strong>before</strong> you need
+              it for this on <%= (document.start_by || document.expires_on).strftime("%-d %B %Y") %>.
+              Renew that first or this renewal cannot start.
+            </div>
+
+          <% when :also_due %>
+            <span class="tag">Renew this one first</span>
+            <div class="note">
+              <%= link_to link.document.title, document_path(link.document) %> needs renewing by
+              <%= link.document.start_by.strftime("%-d %B %Y") %>, which falls before this one.
+              Do them in that order.
+            </div>
+
+          <% else %>
+            <span class="tag tag-soft">Not tracked</span>
+            <div class="note">
+              You are not tracking this document, so we cannot warn you if it lapses and blocks this
+              renewal. <%= link_to "Add it", new_document_path %> and we will watch the chain.
+            </div>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>

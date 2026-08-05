@@ -14,7 +14,7 @@ module Renewaru
     end
 
     def self.load(path)
-      raw = YAML.safe_load(File.read(path), permitted_classes: [Date], aliases: false)
+      raw = YAML.safe_load(File.read(path, encoding: "UTF-8"), permitted_classes: [Date], aliases: false)
       new(normalise(raw), path: path)
     end
 
@@ -124,6 +124,18 @@ module Renewaru
       end
 
       def prerequisite_lead_days = slowest_prerequisite&.fetch("obtain_lead_days").to_i
+
+      # Requirements that are themselves dated documents in the dataset. These
+      # are the edges of the dependency graph, and the reason a renewal can be
+      # blocked by a deadline nobody was watching.
+      def prerequisite_rules
+        required_documents.filter_map do |doc|
+          ref = doc["satisfied_by"]
+          next unless ref
+
+          { requirement: doc, country_code: ref["country_code"], document_kind: ref["document_kind"] }
+        end
+      end
 
       def timeline = Timeline.new(self)
 

@@ -30,6 +30,22 @@
     </p>
   <% end %>
 
+  <% @blocked.each do |document, chain| %>
+    <% chain.blocking.each do |link| %>
+      <div class="banner banner-warn">
+        <strong><%= document.title %> is blocked by another document.</strong>
+        <% if link.status == :expires_first %>
+          <%= link_to link.document.title, document_path(link.document) %> expires
+          <%= link.document.expires_on.strftime("%-d %B %Y") %>, before this renewal needs it.
+          Renew that one first.
+        <% else %>
+          <%= link_to link.document.title, document_path(link.document) %> has to be renewed by
+          <%= link.document.start_by.strftime("%-d %B %Y") %>, which comes first. Do them in that order.
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
   <section>
     <h2>Everything you are tracking</h2>
     <div class="scroll">

@@ -8,6 +8,7 @@ class ReminderMailer < ApplicationMailer
     @urgency = params[:urgency].to_s
     @resolved = @document.resolved
     @timeline = @document.timeline
+    @chain = @document.chain
 
     mail to: @user.email_address, subject: subject_line
   end

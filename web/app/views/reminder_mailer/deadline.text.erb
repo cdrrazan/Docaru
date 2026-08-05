@@ -15,6 +15,12 @@ This has to be in hand before you can apply, which is why the start date is so
 much earlier than the processing time alone suggests.
 
 <% end -%>
+<% @chain.blocking.each do |link| -%>
+BLOCKED BY ANOTHER DOCUMENT
+<%= link.document.title %> <%= link.status == :expires_first ? "expires #{link.document.expires_on.strftime("%-d %B %Y")}, before this renewal needs it" : "has to be renewed by #{link.document.start_by.strftime("%-d %B %Y")}, which comes first" %>.
+Renew that one first, or this renewal cannot proceed.
+
+<% end -%>
 <% unless @timeline.feasible? -%>
 NOTE: this cannot be completed before it expires. Even starting on the first day
 you are legally allowed to apply, it takes about <%= @timeline.shortfall_days %> days longer than the
