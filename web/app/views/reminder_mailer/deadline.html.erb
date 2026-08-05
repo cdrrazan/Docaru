@@ -1,0 +1,91 @@
+<div style="font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; line-height:1.6; color:#1a1a1a; max-width:34rem; margin:0 auto; padding:1rem;">
+
+  <p style="font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:#5c5c56; margin:0 0 .3rem;">
+    <%= @document.member.name %>
+  </p>
+
+  <h1 style="font-size:1.35rem; line-height:1.25; margin:0 0 .75rem;">
+    <%= @document.title %>
+  </h1>
+
+  <div style="border-left:3px solid #1c5d4a; background:#f6f8f7; border-radius:6px; padding:.85rem 1rem; margin:1rem 0;">
+    <p style="margin:0; font-weight:600;"><%= document_verdict(@document) %></p>
+  </div>
+
+  <% if @resolved && @timeline %>
+    <table style="width:100%; border-collapse:collapse; font-size:.93rem; margin:1.25rem 0;">
+      <tr>
+        <td style="padding:.4rem 0; color:#5c5c56;">Expires</td>
+        <td style="padding:.4rem 0; text-align:right;"><%= @document.expires_on.strftime("%-d %B %Y") %></td>
+      </tr>
+      <tr>
+        <td style="padding:.4rem 0; color:#5c5c56; border-top:1px solid #e2e2dc;"><strong>Start by</strong></td>
+        <td style="padding:.4rem 0; text-align:right; border-top:1px solid #e2e2dc;">
+          <strong><%= @document.start_by.strftime("%-d %B %Y") %></strong>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:.4rem 0; color:#5c5c56; border-top:1px solid #e2e2dc;">Lead time needed</td>
+        <td style="padding:.4rem 0; text-align:right; border-top:1px solid #e2e2dc;">
+          <%= @timeline.required_lead_days %> days
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:.4rem 0; color:#5c5c56; border-top:1px solid #e2e2dc;">Applying</td>
+        <td style="padding:.4rem 0; text-align:right; border-top:1px solid #e2e2dc;">
+          <%= @resolved.domestic? ? "in #{Renewaru::Countries.title(@document.issuing_country)}" : "from #{Renewaru::Countries.title(@resolved.context)}" %>
+        </td>
+      </tr>
+    </table>
+
+    <% if (slowest = @resolved.slowest_prerequisite) %>
+      <div style="background:#fdf6e3; border:1px solid #d9c47a; border-radius:6px; padding:.85rem 1rem; margin:1rem 0;">
+        <p style="margin:0 0 .3rem; font-weight:600;">First thing to do</p>
+        <p style="margin:0;">
+          <%= slowest["item"] %> — allow about <%= slowest["obtain_lead_days"] %> days to obtain.
+          It has to be in hand before you can apply, which is why the start date is so much earlier
+          than the processing time alone suggests.
+        </p>
+      </div>
+    <% end %>
+
+    <% unless @timeline.feasible? %>
+      <div style="background:#fbeeee; border:1px solid #dda9a9; border-radius:6px; padding:.85rem 1rem; margin:1rem 0;">
+        <p style="margin:0;">
+          <strong>This cannot be completed before it expires.</strong>
+          Even starting on the first day you are legally allowed to apply, it takes about
+          <%= @timeline.shortfall_days %> days longer than the time remaining. Plan around the gap
+          rather than around the deadline.
+        </p>
+      </div>
+    <% end %>
+
+    <p style="margin:1.5rem 0;">
+      <a href="<%= playbook_url_for(@document) %>"
+         style="display:inline-block; background:#1c5d4a; color:#fff; text-decoration:none; font-weight:600; padding:.6rem 1.1rem; border-radius:6px;">
+        Read the full playbook
+      </a>
+    </p>
+  <% else %>
+    <p>Expires <strong><%= @document.expires_on.strftime("%-d %B %Y") %></strong>.</p>
+    <p style="color:#5c5c56;">
+      We have no renewal rule for this document yet, so this is an expiry reminder rather than a
+      start-by date. Check with the issuing authority for how long renewal actually takes where you are.
+    </p>
+  <% end %>
+
+  <p style="font-size:.9rem;">
+    <a href="<%= dashboard_url %>" style="color:#1c5d4a;">See all your deadlines</a>
+  </p>
+
+  <hr style="border:0; border-top:1px solid #e2e2dc; margin:1.75rem 0 .75rem;">
+
+  <p style="font-size:.82rem; color:#5c5c56; margin:0;">
+    <% if @resolved&.draft? %>
+      These figures are unverified — nobody has yet checked this rule against the issuing authority.
+      Confirm at <a href="<%= @resolved.authority_url %>" style="color:#5c5c56;"><%= @resolved.authority_url %></a>
+      before relying on them.<br><br>
+    <% end %>
+    Reference information, not legal advice.
+  </p>
+</div>

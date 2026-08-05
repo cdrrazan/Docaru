@@ -6,6 +6,12 @@
 class Document < ApplicationRecord
   belongs_to :member
   has_one :household, through: :member
+  has_many :reminders, dependent: :destroy
+
+  # Renewing means a new expiry date, which means a new cycle. Clearing the sent
+  # log lets the whole cascade run again for the new date instead of being
+  # suppressed by last cycle's dedupe keys.
+  after_update_commit :reset_reminders, if: :saved_change_to_expires_on?
 
   # Not needed to compute a date, so the server has no business reading them.
   encrypts :identifier
@@ -79,4 +85,12 @@ class Document < ApplicationRecord
     [ severity, start_by || expires_on ] <=> [ other.severity, other.start_by || other.expires_on ]
   end
   include Comparable
+
+  def schedule = ReminderSchedule.new(self)
+
+  private
+
+  def reset_reminders
+    reminders.delete_all
+  end
 end

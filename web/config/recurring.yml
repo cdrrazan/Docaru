@@ -1,15 +1,21 @@
-# examples:
-#   periodic_cleanup:
-#     class: CleanSoftDeletedRecordsJob
-#     queue: background
-#     args: [ 1000, { batch_size: 500 } ]
-#     schedule: every hour
-#   periodic_cleanup_with_command:
-#     command: "SoftDeletedRecord.due.delete_all"
-#     priority: 2
-#     schedule: at 5am every day
+# The reminder sweep is the product. If this stops running, the application
+# still renders perfectly and delivers nothing of value.
+#
+# It runs daily rather than hourly because every deadline here is a date, not a
+# time — and it is idempotent, so a missed night is caught up by the next run
+# rather than lost.
+defaults: &defaults
+  deliver_reminders:
+    class: DeliverRemindersJob
+    queue: default
+    schedule: every day at 7am
+
+development:
+  <<: *defaults
 
 production:
+  <<: *defaults
+
   clear_solid_queue_finished_jobs:
     command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
     schedule: every hour at minute 12

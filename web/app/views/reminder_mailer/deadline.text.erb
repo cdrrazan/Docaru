@@ -1,0 +1,41 @@
+<%= @document.member.name %>'s <%= @document.title %>
+
+<%= document_verdict(@document) %>
+
+<% if @resolved && @timeline %>
+Expires:      <%= @document.expires_on.strftime("%-d %B %Y") %>
+Start by:     <%= @document.start_by.strftime("%-d %B %Y") %>
+Lead time:    <%= @timeline.required_lead_days %> days (<%= @timeline.processing_days %> processing, worst case)
+Applying:     <%= @resolved.domestic? ? "in #{Renewaru::Countries.title(@document.issuing_country)}" : "from #{Renewaru::Countries.title(@resolved.context)}" %>
+
+<% if (slowest = @resolved.slowest_prerequisite) -%>
+FIRST THING TO DO
+<%= slowest["item"] %> — allow about <%= slowest["obtain_lead_days"] %> days to obtain.
+This has to be in hand before you can apply, which is why the start date is so
+much earlier than the processing time alone suggests.
+
+<% end -%>
+<% unless @timeline.feasible? -%>
+NOTE: this cannot be completed before it expires. Even starting on the first day
+you are legally allowed to apply, it takes about <%= @timeline.shortfall_days %> days longer than the
+time remaining. Plan around the gap rather than around the deadline.
+
+<% end -%>
+Full playbook and the complete document list:
+<%= playbook_url_for(@document) %>
+<% else -%>
+Expires: <%= @document.expires_on.strftime("%-d %B %Y") %>
+
+We have no renewal rule for this document yet, so this is an expiry reminder
+rather than a start-by date. Check with the issuing authority for how long
+renewal actually takes where you are.
+<% end %>
+
+Your deadlines: <%= dashboard_url %>
+
+--
+<% if @resolved&.draft? -%>
+These figures are unverified — nobody has yet checked this rule against the
+issuing authority. Confirm at <%= @resolved.authority_url %> before relying on them.
+<% end -%>
+Reference information, not legal advice.

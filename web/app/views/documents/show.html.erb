@@ -1,0 +1,104 @@
+<% content_for :title, @document.title %>
+
+<p class="eyebrow"><%= @document.member.display_name %></p>
+<h1><%= @document.title %></h1>
+
+<section class="answer <%= "answer-warn" unless @document.status == :ahead %>">
+  <p class="eyebrow">When to start</p>
+  <p class="headline"><%= status_headline(@document) %></p>
+  <p><%= document_verdict(@document) %></p>
+</section>
+
+<% if @resolved.nil? %>
+  <div class="banner banner-warn">
+    <strong>No renewal rule for this document yet.</strong>
+    We can only remind you before it expires, not tell you when to start — that needs a rule for
+    <%= country_title(@document.issuing_country) %>. The dataset is open and grows one verified rule
+    at a time.
+  </div>
+<% else %>
+  <%= render "shared/draft_banner", resolved: @resolved %>
+<% end %>
+
+<section>
+  <h2>Details</h2>
+  <div class="scroll">
+    <table>
+      <tbody>
+        <tr>
+          <td>Expires</td>
+          <td class="num"><%= @document.expires_on.strftime("%-d %b %Y") %></td>
+        </tr>
+        <% if @document.start_by %>
+          <tr class="total">
+            <td>Start by</td>
+            <td class="num"><%= @document.start_by.strftime("%-d %b %Y") %></td>
+          </tr>
+        <% end %>
+        <tr>
+          <td>Issued by</td>
+          <td class="num"><%= country_title(@document.issuing_country) %></td>
+        </tr>
+        <tr>
+          <td>Renewing from</td>
+          <td class="num">
+            <%= @document.context == "domestic" ? "At home" : country_title(@document.context) %>
+          </td>
+        </tr>
+        <% if @document.identifier.present? %>
+          <tr>
+            <td>Number</td>
+            <td class="num"><%= @document.identifier %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if @document.notes.present? %>
+    <h3>Notes</h3>
+    <p><%= simple_format @document.notes %></p>
+  <% end %>
+</section>
+
+<section>
+  <h2>When we will contact you</h2>
+  <p class="note">
+    Anchored to the start date, not the expiry date — a reminder that arrives when it expires is
+    correct and useless.
+  </p>
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr><th>Alert</th><th class="num">Date</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <% sent = @document.reminders.index_by(&:kind) %>
+        <% @schedule.entries.each do |entry| %>
+          <tr>
+            <td><%= reminder_label(entry) %></td>
+            <td class="num"><%= entry.on.strftime("%-d %b %Y") %></td>
+            <td>
+              <% if sent[entry.kind] %>
+                <span class="tag tag-ok">Sent</span>
+              <% elsif entry.on <= Date.current %>
+                <span class="tag">Due</span>
+              <% else %>
+                <span class="tag tag-soft">Scheduled</span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<p style="margin-top:2rem">
+  <% if @document.rule %>
+    <%= link_to "Read the full playbook", playbook_path_for(@document.rule, @resolved.context), class: "btn btn-quiet" %>
+  <% end %>
+  <%= link_to "Edit", edit_document_path(@document), class: "btn btn-quiet" %>
+  <%= button_to "Remove", document_path(@document), method: :delete, class: "btn btn-quiet",
+        form: { style: "display:inline", data: { turbo_confirm: "Remove #{@document.title}?" } } %>
+</p>

@@ -1,0 +1,74 @@
+<%= form_with model: document do |form| %>
+  <% if document.errors.any? %>
+    <div class="errors">
+      <strong>That did not work:</strong>
+      <ul>
+        <% document.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :member_id, "Whose is it?" %>
+    <%= form.collection_select :member_id, household.members.ordered, :id, :display_name,
+          { include_blank: "Choose a person…" }, required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :kind, "What is it?" %>
+    <p class="hint">
+      Only documents we hold a renewal rule for can be given a start-by date. Anything else still
+      gets expiry reminders.
+    </p>
+    <%= form.select :kind,
+          RuleCatalog.rules.sort_by(&:title).map { |rule| [ rule.title, rule.document_kind, { "data-country" => rule.country_code } ] },
+          { include_blank: "Choose a document…" }, required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :issuing_country, "Which country issued it?" %>
+    <p class="hint">Not where you live — who issued the document.</p>
+    <%= form.select :issuing_country,
+          Renewaru::Countries::NAMES.map { |code, name| [ Renewaru::Countries.title(code), code ] },
+          { include_blank: "Choose a country…" }, required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :applying_from, "Where will you renew it from?" %>
+    <p class="hint">
+      This changes the answer substantially. Renewing through a mission abroad is slower than
+      renewing at home, and missions differ from each other.
+    </p>
+    <%= form.select :applying_from,
+          [ [ "At home, in the issuing country", "domestic" ] ] +
+            Renewaru::Countries::NAMES.map { |code, _| [ "From #{Renewaru::Countries.title(code)}", code ] } %>
+  </div>
+
+  <div class="field">
+    <%= form.label :expires_on, "Expiry date" %>
+    <%= form.date_field :expires_on, required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :label, "Label (optional)" %>
+    <p class="hint">If you hold more than one of something — "Old passport", "Second car".</p>
+    <%= form.text_field :label %>
+  </div>
+
+  <div class="field">
+    <%= form.label :identifier, "Document number (optional)" %>
+    <p class="hint">Encrypted. We never need it to work out a date.</p>
+    <%= form.text_field :identifier, autocomplete: "off" %>
+  </div>
+
+  <div class="field">
+    <%= form.label :notes, "Notes (optional)" %>
+    <p class="hint">Encrypted.</p>
+    <%= form.text_area :notes, rows: 3 %>
+  </div>
+
+  <%= form.submit class: "btn" %>
+  <%= link_to "Cancel", dashboard_path, class: "btn btn-quiet" %>
+<% end %>

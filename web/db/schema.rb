@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_05_122534) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_05_123405) do
   create_table "documents", force: :cascade do |t|
     t.string "applying_from"
     t.datetime "created_at", null: false
@@ -43,6 +43,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_122534) do
     t.index ["household_id"], name: "index_members_on_household_id"
   end
 
+  create_table "reminders", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "document_id", null: false
+    t.string "kind", null: false
+    t.date "scheduled_for", null: false
+    t.datetime "sent_at"
+    t.datetime "updated_at", null: false
+    t.index ["document_id", "kind"], name: "index_reminders_on_document_id_and_kind", unique: true
+    t.index ["document_id"], name: "index_reminders_on_document_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "ip_address"
@@ -65,6 +76,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_122534) do
 
   add_foreign_key "documents", "members"
   add_foreign_key "members", "households"
+  add_foreign_key "reminders", "documents"
   add_foreign_key "sessions", "users"
   add_foreign_key "users", "households"
 end

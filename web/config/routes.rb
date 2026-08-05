@@ -27,6 +27,8 @@ Rails.application.routes.draw do
 
   get "dashboard", to: "dashboard#show", as: :dashboard
   resources :members, except: :show
+  # No index: the dashboard is the list, sorted by urgency rather than by name.
+  resources :documents, except: :index
 
   get "up" => "rails/health#show", as: :rails_health_check
 end
