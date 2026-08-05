@@ -49,6 +49,29 @@ class ScansControllerTest < ActionDispatch::IntegrationTest
     assert_select ".errors", /expiry date/
   end
 
+  test "offers the camera without requiring it" do
+    get new_scan_path
+
+    assert_select "[data-controller=mrz]"
+    assert_select "video[data-mrz-target=video]"
+    assert_select "textarea[name=mrz]", 1, "typing it in must still work"
+    assert_select "noscript"
+  end
+
+  # A camera misreads 0 as O in the date fields. The correction is proved by the
+  # check digits, then said out loud — the person is holding the document and
+  # can confirm a date faster than a checksum can be certain of one.
+  test "a camera misread is repaired and reported, not applied quietly" do
+    post scans_path, params: { mrz: valid_mrz.sub("310220", "3IO22O") }
+
+    assert_response :redirect
+    follow_redirect!
+
+    assert_select "input[name='document[expires_on]'][value='2031-02-20']"
+    assert_select ".flash", /corrected/
+    assert_select ".flash", /confirm the expiry date/
+  end
+
   test "garbage does not blow up" do
     post scans_path, params: { mrz: "hello" }
 

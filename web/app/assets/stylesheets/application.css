@@ -212,6 +212,23 @@ input:focus, select:focus, textarea:focus {
 .btn:hover { filter: brightness(1.08); }
 .btn-quiet { background: transparent; color: var(--fg); border-color: var(--line); }
 
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .85rem;
+}
+
+/* ---------- camera capture ---------- */
+
+.capture:empty { display: none; }
+.capture video, .capture img {
+  width: 100%; max-width: 100%; border-radius: var(--radius);
+  border: 1px solid var(--line); background: #000; display: block;
+}
+/* The zone is a wide, short band. Letting it fill the width is what makes the
+   characters large enough to copy off a still. */
+.capture img { background: var(--card); image-rendering: crisp-edges; }
+.status-error { color: var(--fg); font-weight: 600; }
+
 .errors {
   background: var(--draft-bg); border: 1px solid var(--draft-line);
   border-radius: var(--radius); padding: .8rem 1rem; margin-bottom: 1rem; font-size: .93rem;

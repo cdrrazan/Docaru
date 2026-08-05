@@ -76,6 +76,66 @@ class MachineReadableZoneTest < ActiveSupport::TestCase
     assert(result.errors.any? { |e| e.match?(/expiry date/) })
   end
 
+  # Reading from a camera rather than a keyboard, the errors stop being random
+  # and become a short list of shapes: O for 0, I for 1, S for 5. They land in
+  # the date fields, because that is where digits are.
+  test "repairs digit-shaped letters in the numeric fields" do
+    lines = td3
+    lines[1] = lines[1].dup.tap { |line| line[21, 6] = "3IO22O" } # 310220 misread
+
+    result = MachineReadableZone.parse(lines.join("\n"))
+
+    assert_predicate result, :valid?
+    assert_equal Date.new(2031, 2, 20), result.expires_on
+    assert_predicate result, :repaired?
+  end
+
+  test "repairs the date of birth as well as the expiry" do
+    lines = td3
+    lines[1] = lines[1].dup.tap { |line| line[13, 6] = "9OO115" } # 900115 misread
+
+    result = MachineReadableZone.parse(lines.join("\n"))
+
+    assert_predicate result, :valid?
+    assert_equal Date.new(1990, 1, 15), result.date_of_birth
+  end
+
+  # The repair is allowed to rescue a failed read. It is not allowed to
+  # manufacture a confident wrong date out of one, which is the only failure
+  # this product genuinely cannot afford.
+  test "a genuinely wrong digit is still rejected rather than repaired" do
+    lines = td3
+    lines[1] = lines[1].dup.tap { |line| line[21, 6] = "310221" }
+
+    result = MachineReadableZone.parse(lines.join("\n"))
+
+    assert_not_predicate result, :valid?
+    assert_not_predicate result, :repaired?
+  end
+
+  # A document number may legitimately contain letters, so a letter there is
+  # not evidence of anything and must be left alone.
+  test "leaves letters in the document number untouched" do
+    result = MachineReadableZone.parse(td3(number: "IO12B4567").join("\n"))
+
+    assert_predicate result, :valid?
+    assert_equal "IO12B4567", result.number
+    assert_not_predicate result, :repaired?
+  end
+
+  test "says which characters it changed rather than repairing silently" do
+    lines = td3
+    lines[1] = lines[1].dup.tap { |line| line[21, 6] = "3IO22O" }
+
+    result = MachineReadableZone.parse(lines.join("\n"))
+
+    assert_equal [ "I→1", "O→0", "O→0" ], result.repaired
+  end
+
+  test "a clean read reports no repair" do
+    assert_not_predicate MachineReadableZone.parse(td3.join("\n")), :repaired?
+  end
+
   test "rejects a corrupted document number" do
     lines = td3
     lines[1] = lines[1].dup.tap { |line| line[0, 9] = "99XY99999" }
