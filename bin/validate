@@ -158,6 +158,59 @@ dataset.each do |rule|
   warnings << "#{file}: status is draft — figures are unconfirmed" if rule.status == "draft"
 end
 
+# 11. The dependency graph has to be sound. A satisfied_by pointing at a rule
+#     that does not exist would silently drop an edge, and a cycle would make
+#     the chain non-computable — so both are hard errors rather than warnings.
+index = dataset.rules.to_h { |rule| [ [ rule.country_code, rule.document_kind ], rule ] }
+
+edges = {}
+
+dataset.each do |rule|
+  file = rel(rule.path)
+  from = [ rule.country_code, rule.document_kind ]
+
+  Array(rule.data["required_documents"]).each do |requirement|
+    ref = requirement["satisfied_by"]
+    next unless ref
+
+    to = [ ref["country_code"], ref["document_kind"] ]
+
+    if to == from
+      errors << "#{file}: #{requirement["item"].inspect} is satisfied_by itself"
+      next
+    end
+
+    unless index.key?(to)
+      errors << "#{file}: #{requirement["item"].inspect} is satisfied_by " \
+                "#{to.join("/")}, which has no rule in the dataset"
+      next
+    end
+
+    (edges[from] ||= []) << to
+  end
+end
+
+# Depth-first cycle detection over the whole graph.
+visiting = {}
+visited = {}
+detect = lambda do |node, trail|
+  return if visited[node]
+
+  if visiting[node]
+    cycle = (trail + [ node ]).drop_while { |n| n != node }.map { |n| n.join("/") }
+    errors << "renewal rules form a prerequisite cycle: #{cycle.join(" -> ")}"
+    return
+  end
+
+  visiting[node] = true
+  edges.fetch(node, []).each { |child| detect.call(child, trail + [ node ]) }
+  visiting.delete(node)
+  visited[node] = true
+end
+
+# Snapshot the keys: the traversal must not mutate the hash it is walking.
+edges.keys.each { |node| detect.call(node, []) }
+
 if dataset.rules.empty?
   errors << "no rule files found under rules/"
 end

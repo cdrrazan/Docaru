@@ -25,8 +25,11 @@ module Renewaru
       @root = schema
     end
 
+    # Read as UTF-8 explicitly. The schema's prose contains punctuation outside
+    # ASCII, and Ruby's default external encoding depends on the caller's locale
+    # — which on a bare CI container is often US-ASCII.
     def self.from_file(path)
-      new(JSON.parse(File.read(path)))
+      new(JSON.parse(File.read(path, encoding: "UTF-8")))
     end
 
     # Returns an array of Error. Empty means valid.

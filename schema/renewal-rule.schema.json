@@ -216,6 +216,23 @@
           "description": "True where the item is only needed in some circumstances, described in detail.",
           "type": "boolean",
           "default": false
+        },
+        "satisfied_by": {
+          "description": "Where this requirement is itself another dated document in the dataset, the rule that governs it. This is what turns a list of documents into a graph: Nepal will not renew a vehicle registration without current third-party insurance, so the insurance deadline silently governs the registration deadline. Nobody tracks that by hand, and no product that stores only expiry dates can compute it.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["country_code", "document_kind"],
+          "properties": {
+            "country_code": {
+              "description": "Issuing country of the prerequisite document. Usually the same as the parent rule, but not necessarily — a residence permit can require a passport from elsewhere.",
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
+            },
+            "document_kind": {
+              "description": "Kind of the prerequisite document. Must resolve to a rule that exists; bin/validate rejects a dangling reference.",
+              "type": "string"
+            }
+          }
         }
       }
     },

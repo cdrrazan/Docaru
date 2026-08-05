@@ -30,8 +30,11 @@ required_documents:
   - item: Valid third-party motor insurance for the coming year
     detail: >-
       Must already be in force before the transport office will renew. This is a hard
-      prerequisite, not a parallel task — see rules/np/insurance-policy.yml.
+      prerequisite, not a parallel task.
     obtain_lead_days: 7
+    satisfied_by:
+      country_code: NP
+      document_kind: insurance_policy
   - item: Vehicle tax payment for the year
     detail: Paid at the transport office or the provincial revenue counter at the same visit.
   - item: Valid pollution (emission) test certificate
