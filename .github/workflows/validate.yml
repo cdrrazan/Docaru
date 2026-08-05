@@ -1,0 +1,39 @@
+name: Validate rules
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Rules go stale on their own, without anyone touching the repository. The
+  # weekly run is what turns "we should re-check these" into something that
+  # actually shows up as a red build.
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: false
+
+      - name: Run tests
+        run: ruby test/schema_test.rb
+
+      - name: Validate every rule
+        run: ruby bin/validate --max-age-days 365
+
+      - name: Build the playbook site
+        run: ruby bin/build
+
+      - name: Upload built site
+        uses: actions/upload-artifact@v4
+        with:
+          name: playbooks
+          path: site/
+          retention-days: 14

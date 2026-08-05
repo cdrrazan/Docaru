@@ -1,0 +1,157 @@
+schema_version: 1
+country_code: NP
+document_kind: passport
+title: Nepali e-Passport
+status: draft
+
+validity_years: 10
+
+# Nepal does not let you renew early. Applications are accepted only once the
+# passport has expired or has under a year of validity left, which makes the
+# window itself the binding constraint when applying from abroad.
+window_opens_days_before: 365
+window_closes_days_before: -3650
+
+processing_days_domestic:
+  typical: 15
+  worst_case: 45
+
+# Applying at a mission is slower than applying at home for a structural reason:
+# the mission only captures biometrics. The book itself is personalised in
+# Kathmandu and couriered back, so the queue is the Department's, not the
+# mission's.
+processing_days_abroad:
+  typical: 42
+  worst_case: 75
+
+buffer_days: 21
+
+required_documents:
+  - item: Previous passport, original
+    detail: >-
+      Handed in at enrolment. You are without a passport from that moment until
+      collection, which is the part most applicants do not plan for: it rules out
+      international travel, and in many countries it also rules out renewing local
+      immigration status that requires sighting the passport.
+  - item: Nepali citizenship certificate, original plus a photocopy
+    detail: >-
+      The name and date of birth must match the passport exactly. A mismatch is the
+      single most common cause of rejection and cannot be fixed at the counter — it
+      requires a correction at the issuing District Administration Office in Nepal.
+    obtain_lead_days: 90
+  - item: Completed online pre-enrolment form
+    detail: Submitted at nepalpassport.gov.np before attending; bring the printed barcode.
+  - item: Fee, paid in the manner the mission specifies
+    detail: >-
+      Missions commonly require exact cash in local currency or a money order, and
+      commonly refuse cards. Confirm the accepted method before travelling to the mission.
+  - item: Proof of lawful residence in the country you are applying from
+    detail: Residence permit, visa, or student status document.
+    optional: true
+
+cost:
+  amount: 5000
+  currency: NPR
+  expedited_amount: 12000
+  note: >-
+    Domestic fee for the 34-page book. The 66-page book is higher. Missions charge a
+    separate schedule, usually set in USD — see the per-country overrides.
+
+authority_url: https://nepalpassport.gov.np/
+appointment_required: true
+in_person_required: true
+
+lapse_consequence: >-
+  An expired Nepali passport ends your ability to travel internationally and, in most
+  host countries, blocks renewal of the visa or residence permit that depends on it.
+  Because Nepal will not accept an application until validity drops under a year, a
+  holder abroad can face a stretch of several weeks with no valid passport at all —
+  during which re-entry to the host country, and any emergency travel to Nepal, is not possible.
+
+notes: >-
+  Biometric enrolment must be done in person at a mission; there is no postal route
+  and no representative route. For applicants living far from the nearest mission this
+  adds a trip that must be booked around appointment availability, and appointment lead
+  time at busy missions can exceed the processing time itself.
+
+verified_on: null
+verified_by: null
+
+source_urls:
+  - https://nepalpassport.gov.np/
+  - https://us.nepalembassy.gov.np/pages/e-passport-1/
+  - https://gva.nepalmission.gov.np/pages/passport/
+
+abroad_overrides:
+  GB:
+    status: draft
+    processing_days:
+      typical: 42
+      worst_case: 70
+    authority_url: https://uk.nepalembassy.gov.np/
+    appointment_required: true
+    additional_documents:
+      - item: Proof of UK immigration status
+        detail: eVisa share code, BRP, or vignette.
+    notes: >-
+      Single mission for the whole UK, in London. Applicants outside the south east
+      should budget a travel day for enrolment and treat collection as either a second
+      trip or a courier arrangement made at enrolment.
+    source_urls:
+      - https://uk.nepalembassy.gov.np/
+
+  US:
+    status: draft
+    processing_days:
+      typical: 45
+      worst_case: 90
+    authority_url: https://us.nepalembassy.gov.np/pages/e-passport-1/
+    appointment_required: true
+    additional_documents:
+      - item: Proof of US immigration status
+        detail: Visa and I-94, green card, or naturalisation record.
+      - item: Self-addressed prepaid return envelope
+        detail: Required where the mission returns the passport by mail rather than in person.
+        optional: true
+    notes: >-
+      Coverage is split between the Embassy in Washington DC and the Consulate General
+      in New York, with honorary consulates that cannot enrol biometrics. Confirm which
+      office covers your state before booking; attending the wrong one wastes the trip.
+    source_urls:
+      - https://us.nepalembassy.gov.np/pages/e-passport-1/
+
+  AU:
+    status: draft
+    processing_days:
+      typical: 45
+      worst_case: 85
+    authority_url: https://au.nepalembassy.gov.np/
+    appointment_required: true
+    notes: >-
+      Enrolment is in Canberra. Given domestic travel distances, students and workers
+      in other states should expect the trip, not the queue, to be the binding cost.
+    source_urls:
+      - https://au.nepalembassy.gov.np/
+
+  QA:
+    status: draft
+    processing_days:
+      typical: 40
+      worst_case: 75
+    authority_url: https://qa.nepalembassy.gov.np/
+    appointment_required: true
+    additional_documents:
+      - item: Qatar ID (QID), original plus a copy
+      - item: Employer no-objection letter
+        detail: >-
+          Commonly required where the employer holds the worker's documents. Obtaining
+          it is frequently the slowest step and is outside the applicant's control.
+        obtain_lead_days: 21
+        optional: true
+    notes: >-
+      Serves a very large migrant worker population, so counter demand is high and
+      appointment lead times are correspondingly long. Workers whose employer retains
+      their passport should start by resolving that, since enrolment requires
+      surrendering the old book.
+    source_urls:
+      - https://qa.nepalembassy.gov.np/

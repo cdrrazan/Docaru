@@ -1,0 +1,143 @@
+schema_version: 1
+country_code: NP
+document_kind: drivers_licence
+title: Nepal Smart Driving Licence
+status: draft
+
+validity_years: 5
+
+window_opens_days_before: 90
+window_closes_days_before: -730
+
+# The counter transaction is quick and issues a receipt that serves as an interim
+# licence. The physical smart card is a separate queue entirely, and historically a
+# far longer one — which is why typical and worst case are so far apart here.
+processing_days_domestic:
+  typical: 30
+  worst_case: 365
+
+processing_days_abroad:
+  typical: 60
+  worst_case: 400
+
+buffer_days: 45
+
+required_documents:
+  - item: Existing driving licence, original
+  - item: Nepali citizenship certificate, original plus a copy
+  - item: Completed renewal application form
+    detail: Submitted online through the DoTM portal before attending.
+  - item: Recent passport-size photographs
+  - item: Medical fitness report
+    detail: >-
+      Required for older applicants and for the heavy vehicle categories. Obtained from
+      an approved medical practitioner.
+    obtain_lead_days: 7
+    optional: true
+
+cost:
+  amount: 1500
+  currency: NPR
+  note: >-
+    Varies by category and by how many categories are being renewed together. Late
+    renewal adds a penalty on top.
+
+authority_url: https://www.dotm.gov.np/
+appointment_required: true
+in_person_required: true
+
+lapse_consequence: >-
+  Driving on an expired licence is a traffic offence carrying a fine, and insurers can
+  decline a claim where the driver was not validly licensed at the time — which turns a
+  small administrative lapse into uncapped personal liability after an accident. Left
+  expired long enough, renewal is refused and the holder must sit the written and
+  practical tests again as a new applicant.
+
+notes: >-
+  The gap between the receipt and the card is the thing to plan around. The receipt is
+  accepted for driving within Nepal, but it is not accepted as photo identification
+  abroad and cannot be used to obtain an International Driving Permit — so a holder who
+  needs to drive in another country must plan against the card date, not the receipt
+  date, and those can be the better part of a year apart. Renewal from abroad is only
+  worth attempting where the holder will return to Nepal periodically; for a permanent
+  move, converting to a host-country licence is usually the better plan.
+
+verified_on: null
+verified_by: null
+
+source_urls:
+  - https://www.dotm.gov.np/
+  - https://applydl.dotm.gov.np/
+
+abroad_overrides:
+  GB:
+    status: draft
+    processing_days:
+      typical: 60
+      worst_case: 400
+    authority_url: https://uk.nepalembassy.gov.np/
+    additional_documents:
+      - item: Power of attorney attested by the Nepali mission
+        detail: >-
+          Names the representative who will attend the transport office in Nepal.
+          Renewal by representative is not accepted at every office, so confirm with
+          the specific office before committing to this route.
+        obtain_lead_days: 30
+    notes: >-
+      The UK does not exchange Nepali licences, so a resident who drives must pass the
+      UK test regardless. Renewing the Nepali licence is worth the effort only for
+      continued driving during visits to Nepal.
+    source_urls:
+      - https://uk.nepalembassy.gov.np/
+
+  US:
+    status: draft
+    processing_days:
+      typical: 65
+      worst_case: 400
+    authority_url: https://us.nepalembassy.gov.np/
+    additional_documents:
+      - item: Power of attorney attested by the Nepali mission
+        detail: >-
+          Names the representative who will attend the transport office in Nepal.
+          Renewal by representative is not accepted at every office, so confirm with
+          the specific office before committing to this route.
+        obtain_lead_days: 30
+    source_urls:
+      - https://us.nepalembassy.gov.np/
+
+  AU:
+    status: draft
+    processing_days:
+      typical: 65
+      worst_case: 400
+    authority_url: https://au.nepalembassy.gov.np/
+    additional_documents:
+      - item: Power of attorney attested by the Nepali mission
+        detail: >-
+          Names the representative who will attend the transport office in Nepal.
+          Renewal by representative is not accepted at every office, so confirm with
+          the specific office before committing to this route.
+        obtain_lead_days: 30
+    source_urls:
+      - https://au.nepalembassy.gov.np/
+
+  QA:
+    status: draft
+    processing_days:
+      typical: 60
+      worst_case: 400
+    authority_url: https://qa.nepalembassy.gov.np/
+    additional_documents:
+      - item: Power of attorney attested by the Nepali mission
+        detail: >-
+          Names the representative who will attend the transport office in Nepal.
+          Renewal by representative is not accepted at every office, so confirm with
+          the specific office before committing to this route.
+        obtain_lead_days: 30
+    notes: >-
+      Qatar accepts conversion of some foreign licences, so a worker holding a valid
+      Nepali licence should check whether converting locally is faster than renewing
+      through Nepal.
+    source_urls:
+      - https://qa.nepalembassy.gov.np/

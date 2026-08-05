@@ -1,0 +1,130 @@
+schema_version: 1
+country_code: NP
+document_kind: police_clearance
+title: Nepal Police Clearance Certificate (PCC)
+status: draft
+
+# A PCC carries no expiry printed on its face. Its useful life is set by whoever
+# demands it — immigration authorities and employers typically refuse one older
+# than six months. Treating that as the validity is what lets the alert engine
+# reason about it at all.
+validity_years: 0.5
+
+window_opens_days_before: 3650
+window_closes_days_before: 0
+
+processing_days_domestic:
+  typical: 7
+  worst_case: 21
+
+# From abroad the certificate is not issued by the mission. The mission attests
+# the request and forwards it; the certificate is produced in Kathmandu and
+# returned. Every step is postal, and the count reflects that.
+processing_days_abroad:
+  typical: 45
+  worst_case: 90
+
+buffer_days: 21
+
+required_documents:
+  - item: Nepali passport, copy of the data page
+  - item: Nepali citizenship certificate, copy
+  - item: Completed PCC application form
+  - item: Recent passport-size photographs
+    detail: Two, on a plain light background.
+  - item: Fingerprint card taken by a recognised authority
+    detail: >-
+      Taken by the local police force or the Nepali mission when applying from abroad.
+      Where the host country's police charge for fingerprinting, that appointment is
+      itself a scheduling step.
+    obtain_lead_days: 14
+  - item: Power of attorney, attested by the Nepali mission
+    detail: >-
+      Needed where a relative in Nepal will collect on your behalf, which is the usual
+      route and much faster than postal return. Attestation is a separate mission visit.
+    obtain_lead_days: 21
+    optional: true
+  - item: Proof of the purpose the certificate is for
+    detail: Visa application letter, employer request, or university admission letter.
+    optional: true
+
+cost:
+  amount: 1000
+  currency: NPR
+  note: >-
+    Domestic government fee. Applying through a mission adds a consular attestation
+    fee per document and, in practice, courier costs in both directions.
+
+authority_url: https://www.nepalpolice.gov.np/
+appointment_required: false
+in_person_required: false
+
+lapse_consequence: >-
+  A certificate older than the accepting authority's cut-off is simply rejected, and
+  because it is almost always a supporting document rather than an end in itself, the
+  rejection lands on something larger — a visa application, a residence permit renewal,
+  a job offer. The application is refused or paused and must be resubmitted, which
+  usually means paying that application's fee again.
+
+notes: >-
+  This document is the clearest case in the dataset for planning backwards rather than
+  forwards. It is rarely needed on its own; it is needed *by* a deadline set elsewhere.
+  Order it too early and it ages out before the application it supports is filed; order
+  it too late and it arrives after. From abroad, the workable window is roughly three
+  months before the application it feeds.
+
+verified_on: null
+verified_by: null
+
+source_urls:
+  - https://www.nepalpolice.gov.np/
+  - https://mofa.gov.np/
+
+abroad_overrides:
+  GB:
+    status: draft
+    processing_days:
+      typical: 45
+      worst_case: 90
+    authority_url: https://uk.nepalembassy.gov.np/
+    additional_documents:
+      - item: UK police fingerprint appointment record
+        detail: >-
+          Most UK forces provide fingerprinting for overseas certificate applications
+          by appointment and charge a fee.
+        obtain_lead_days: 21
+    source_urls:
+      - https://uk.nepalembassy.gov.np/
+
+  US:
+    status: draft
+    processing_days:
+      typical: 50
+      worst_case: 100
+    authority_url: https://us.nepalembassy.gov.np/
+    additional_documents:
+      - item: Fingerprint card, form FD-258
+        detail: Taken at a local police department or an approved live-scan provider.
+        obtain_lead_days: 14
+    source_urls:
+      - https://us.nepalembassy.gov.np/
+
+  AU:
+    status: draft
+    processing_days:
+      typical: 50
+      worst_case: 100
+    authority_url: https://au.nepalembassy.gov.np/
+    source_urls:
+      - https://au.nepalembassy.gov.np/
+
+  QA:
+    status: draft
+    processing_days:
+      typical: 45
+      worst_case: 90
+    authority_url: https://qa.nepalembassy.gov.np/
+    additional_documents:
+      - item: Qatar ID (QID), copy
+    source_urls:
+      - https://qa.nepalembassy.gov.np/
