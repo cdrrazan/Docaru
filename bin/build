@@ -1,0 +1,201 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Generates the static playbook site and the machine-readable bundle.
+#
+#   bin/build [output-dir]     # defaults to site/
+#
+# Every page is complete HTML with no client-side rendering and no external
+# requests. The spec's lesson from Trackaru applies directly: the one
+# acquisition channel that compounds is organic search, and a client-rendered
+# page is invisible to it.
+
+require "json"
+require "fileutils"
+require_relative "../lib/renewaru/dataset"
+require_relative "../lib/renewaru/playbook"
+
+REPO_URL = ENV.fetch("REPO_URL", "https://github.com/cdrrazan/Renewaru")
+out = ARGV[0] || File.join(Renewaru::ROOT, "site")
+
+dataset = Renewaru::Dataset.load
+abort "No rules found. Nothing to build." if dataset.rules.empty?
+
+FileUtils.rm_rf(out)
+FileUtils.mkdir_p(out)
+
+playbooks = dataset.playbooks.map { |r| Renewaru::Playbook.new(r, repo_url: REPO_URL) }
+
+playbooks.each do |playbook|
+  dir = File.join(out, playbook.path)
+  FileUtils.mkdir_p(dir)
+  File.write(File.join(dir, "index.html"), playbook.render)
+end
+
+# ---------------------------------------------------------------------------
+# Index
+# ---------------------------------------------------------------------------
+
+grouped = playbooks.group_by { |p| p.rule.country_code }
+
+cards = grouped.sort.map do |country, group|
+  rows = group.group_by { |p| p.rule.document_kind }.map do |_, variants|
+    rule = variants.first.rule
+    links = variants.sort_by { |v| v.resolved.domestic? ? "" : v.resolved.context }.map do |v|
+      label = v.resolved.domestic? ? "In #{Renewaru::Playbook.country_name(country)}" : "From #{Renewaru::Playbook.country_name(v.resolved.context)}"
+      warn = v.timeline.feasible? ? "" : ' <span class="tag tag-warn">window too short</span>'
+      "<li><a href=\"#{v.path}/index.html\">#{CGI.escapeHTML(label)}</a>#{warn}</li>"
+    end.join
+
+    draft = rule.status == "draft" ? ' <span class="tag tag-soft">unverified</span>' : ""
+    "<div class=\"kind\"><h3>#{CGI.escapeHTML(rule.title)}#{draft}</h3><ul>#{links}</ul></div>"
+  end.join("\n")
+
+  "<section class=\"country\"><h2>#{CGI.escapeHTML(Renewaru::Playbook.country_name(country)).capitalize}</h2>#{rows}</section>"
+end.join("\n")
+
+drafts = dataset.rules.count { |r| r.status == "draft" }
+
+index = <<~HTML
+  <!doctype html>
+  <html lang="en">
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Renewal playbooks — when to start renewing your documents</title>
+  <meta name="description" content="Open, community-maintained renewal rules: how long each document takes to renew, from where, what it costs, and the date you have to start by.">
+  <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+  <main>
+  <h1>Renewal playbooks</h1>
+  <p class="lede">
+    Every document you own has a deadline. These pages answer the question a calendar
+    reminder cannot: <strong>when do you have to start?</strong> — because the answer depends
+    on processing times, on prerequisites that take weeks to obtain, and on which country
+    you are applying from.
+  </p>
+  <p>
+    #{playbooks.length} playbooks across #{dataset.rules.length} documents and
+    #{dataset.countries.length} issuing #{dataset.countries.length == 1 ? "country" : "countries"}.
+    #{drafts.positive? ? "#{drafts} of #{dataset.rules.length} are still unverified and marked as such." : "All rules are verified."}
+  </p>
+  #{cards}
+  <section class="provenance">
+    <h2>About this data</h2>
+    <p>
+      Community-maintained reference information, not legal advice. Government processes
+      change without notice, so every page shows when it was last checked and links to the
+      authority it came from. Corrections are a pull request against a single YAML file.
+    </p>
+    <p><a href="#{REPO_URL}">Source and contribution guide</a> &middot; <a href="rules.json">Machine-readable bundle</a></p>
+  </section>
+  </main>
+  </body>
+  </html>
+HTML
+
+File.write(File.join(out, "index.html"), index)
+
+# ---------------------------------------------------------------------------
+# Machine-readable bundle — what the app (and the Phase 1 calculator) consumes,
+# with the derived timeline precomputed so no consumer has to reimplement it.
+# ---------------------------------------------------------------------------
+
+bundle = {
+  generated_from: "rules/",
+  schema_version: 1,
+  rules: dataset.rules.map(&:data),
+  playbooks: playbooks.map do |p|
+    {
+      slug: p.path,
+      country_code: p.rule.country_code,
+      document_kind: p.rule.document_kind,
+      title: p.rule.title,
+      context: p.resolved.context,
+      status: p.resolved.status,
+      timeline: {
+        typical_days: p.timeline.typical_days,
+        worst_case_days: p.timeline.processing_days,
+        prerequisite_days: p.timeline.prerequisite_days,
+        buffer_days: p.timeline.buffer_days,
+        required_lead_days: p.timeline.required_lead_days,
+        start_days_before_expiry: p.timeline.start_days_before_expiry,
+        feasible: p.timeline.feasible?,
+        shortfall_days: p.timeline.shortfall_days,
+        covered_by_grace: p.timeline.covered_by_grace?
+      }
+    }
+  end
+}
+
+File.write(File.join(out, "rules.json"), JSON.pretty_generate(bundle))
+
+# ---------------------------------------------------------------------------
+# Styles — one file, no fonts fetched, readable in both colour schemes.
+# ---------------------------------------------------------------------------
+
+File.write(File.join(out, "style.css"), <<~CSS)
+  :root {
+    --bg: #fbfbf9; --fg: #1a1a1a; --muted: #5c5c56; --line: #e2e2dc;
+    --card: #ffffff; --accent: #1c5d4a; --warn-bg: #fdf6e3; --warn-line: #d9c47a;
+    --draft-bg: #fbeeee; --draft-line: #dda9a9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14140f; --fg: #ececE4; --muted: #a3a399; --line: #34342c;
+      --card: #1c1c16; --accent: #7fd4b8; --warn-bg: #2b2617; --warn-line: #6b5c2a;
+      --draft-bg: #2c1b1b; --draft-line: #6e3b3b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 46rem; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .bar { max-width: 46rem; margin: 0 auto; padding: 1.25rem 1.25rem 0; }
+  .bar a { color: var(--muted); text-decoration: none; font-size: .9rem; }
+  .bar a:hover { color: var(--accent); }
+  h1 { font-size: 1.85rem; line-height: 1.25; margin: .5rem 0 .75rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.1rem; margin: 2.25rem 0 .6rem; letter-spacing: .01em; }
+  h3 { font-size: 1rem; margin: 1.25rem 0 .4rem; }
+  a { color: var(--accent); }
+  .lede { color: var(--muted); font-size: 1.02rem; }
+  .headline { font-size: 1.35rem; font-weight: 650; margin: .2rem 0 .5rem; letter-spacing: -.01em; }
+  section { margin-bottom: .5rem; }
+  .answer {
+    background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    border-radius: 6px; padding: 1rem 1.15rem; margin: 1.5rem 0;
+  }
+  .answer h2 { margin-top: 0; font-size: .8rem; text-transform: uppercase; color: var(--muted); letter-spacing: .06em; }
+  .answer-warn { border-left-color: var(--warn-line); }
+  .banner {
+    border-radius: 6px; padding: .85rem 1rem; margin: 1.25rem 0; font-size: .93rem;
+    border: 1px solid var(--line);
+  }
+  .banner-draft { background: var(--draft-bg); border-color: var(--draft-line); }
+  .banner-warn { background: var(--warn-bg); border-color: var(--warn-line); }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .93rem; min-width: 30rem; }
+  th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; color: var(--muted); font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; }
+  .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .note { color: var(--muted); font-size: .9rem; }
+  ul.docs { list-style: none; padding: 0; }
+  ul.docs li { border-bottom: 1px solid var(--line); padding: .7rem 0; }
+  .tag {
+    display: inline-block; font-size: .72rem; padding: .1rem .45rem; border-radius: 999px;
+    background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--fg);
+    white-space: nowrap; vertical-align: middle;
+  }
+  .tag-soft { background: transparent; border-color: var(--line); color: var(--muted); }
+  .tag-warn { background: var(--draft-bg); border-color: var(--draft-line); }
+  .country { border-top: 1px solid var(--line); margin-top: 2rem; padding-top: .5rem; }
+  .kind ul { list-style: none; padding: 0; margin: .3rem 0 0; }
+  .kind li { padding: .18rem 0; }
+  .provenance { border-top: 1px solid var(--line); margin-top: 3rem; padding-top: .5rem; color: var(--muted); font-size: .9rem; }
+  .provenance ul { padding-left: 1.1rem; word-break: break-word; }
+CSS
+
+puts "Built #{playbooks.length} playbook page(s) + index into #{out.sub("#{Renewaru::ROOT}/", "")}/"

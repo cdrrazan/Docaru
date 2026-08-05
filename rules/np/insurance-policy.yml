@@ -1,0 +1,67 @@
+schema_version: 1
+country_code: NP
+document_kind: insurance_policy
+title: Nepal Compulsory Third-Party Motor Insurance
+status: draft
+
+validity_years: 1
+
+window_opens_days_before: 45
+window_closes_days_before: 0
+
+processing_days_domestic:
+  typical: 1
+  worst_case: 7
+
+# Uniquely among the vehicle documents, this one does not need anybody to be
+# physically present, so an owner abroad can genuinely do it themselves.
+processing_days_abroad:
+  typical: 3
+  worst_case: 14
+
+buffer_days: 14
+
+required_documents:
+  - item: Bluebook (vehicle registration certificate), copy
+    detail: Engine and chassis numbers must match the policy exactly.
+  - item: Previous year's policy document
+    detail: Needed to carry forward any no-claim discount.
+    optional: true
+  - item: Citizenship certificate of the policyholder, copy
+  - item: Payment of the premium
+    detail: >-
+      Payable by bank transfer or online to most insurers, which is what makes this
+      step doable from abroad without a representative.
+
+cost:
+  amount: 0
+  currency: NPR
+  note: >-
+    Premium is set by vehicle class and engine capacity under the tariff, so it is
+    vehicle-specific. A motorcycle and a private car are not close to each other.
+
+authority_url: https://nia.gov.np/
+appointment_required: false
+in_person_required: false
+
+lapse_consequence: >-
+  Third-party cover is compulsory, so driving without it is an offence in its own
+  right. The consequential damage is larger than the fine: an accident while uninsured
+  leaves the owner personally liable for third-party injury or death claims, with no
+  cap. It also blocks the annual bluebook renewal outright, so a lapse here quietly
+  becomes a vehicle registration lapse a few weeks later, with its own escalating fine.
+
+notes: >-
+  Kept as a separate rule rather than folded into the bluebook entry because the two
+  have genuinely different shapes: this one is cheap, fast, and doable from a laptop
+  in another country, while the registration it unblocks needs an attested power of
+  attorney and someone standing in a queue in Nepal. Renewing this on time is the
+  single highest-leverage thing an owner abroad can do, because it is the prerequisite
+  that gates the slow process.
+
+verified_on: null
+verified_by: null
+
+source_urls:
+  - https://nia.gov.np/
+  - https://www.dotm.gov.np/

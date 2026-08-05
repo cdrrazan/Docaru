@@ -1,0 +1,188 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Validates every rule file against the schema, then against the rules that
+# JSON Schema cannot express: internal consistency, provenance quality,
+# staleness, and whether the process described is physically possible.
+#
+#   bin/validate                      # schema + consistency, warnings shown
+#   bin/validate --strict             # warnings become failures
+#   bin/validate --max-age-days 180   # tighter verification decay
+#
+# Zero dependencies. Ruby 3.x and nothing else.
+
+require "optparse"
+require "uri"
+require_relative "../lib/renewaru/dataset"
+
+options = { max_age_days: 365, strict: false }
+OptionParser.new do |o|
+  o.banner = "Usage: bin/validate [options]"
+  o.on("--strict", "Treat warnings as failures") { options[:strict] = true }
+  o.on("--max-age-days N", Integer, "Fail rules verified longer ago than N days (default 365)") do |n|
+    options[:max_age_days] = n
+  end
+  o.on("-h", "--help") { puts o; exit 0 }
+end.parse!
+
+SCHEMA_PATH = File.join(Renewaru::ROOT, "schema", "renewal-rule.schema.json")
+
+errors = []
+warnings = []
+
+def official?(url)
+  host = URI.parse(url).host.to_s.downcase
+  return false if host.empty?
+
+  host.match?(/(\A|\.)(gov|govt|gob|gouv)(\.[a-z]{2,3})?\z/) ||
+    host.end_with?(".europa.eu", ".int")
+rescue URI::InvalidURIError
+  false
+end
+
+def rel(path) = path.to_s.sub("#{Renewaru::ROOT}/", "")
+
+dataset = Renewaru::Dataset.load
+validator = Renewaru::SchemaValidator.from_file(SCHEMA_PATH)
+
+dataset.load_errors.each { |path, message| errors << "#{rel(path)}: #{message}" }
+
+seen = {}
+
+dataset.each do |rule|
+  file = rel(rule.path)
+
+  # 1. Schema conformance.
+  schema_errors = validator.validate(rule.data)
+  schema_errors.each { |e| errors << "#{file}: #{e}" }
+
+  # Everything past here reads fields the schema was supposed to guarantee.
+  next unless schema_errors.empty?
+
+  # 2. The file's location must agree with its contents, so that a rule can be
+  #    found by path and a PR touching one country cannot silently edit another.
+  expected_dir = rule.country_code.downcase
+  actual_dir = File.basename(File.dirname(rule.path))
+  if actual_dir != expected_dir
+    errors << "#{file}: country_code #{rule.country_code} implies directory rules/#{expected_dir}/, found rules/#{actual_dir}/"
+  end
+
+  expected_name = "#{rule.document_kind.tr("_", "-")}.yml"
+  if File.basename(rule.path) != expected_name
+    errors << "#{file}: document_kind #{rule.document_kind} implies filename #{expected_name}"
+  end
+
+  # 3. One rule per country x kind.
+  key = [rule.country_code, rule.document_kind]
+  if seen[key]
+    errors << "#{file}: duplicate rule for #{rule.country_code}/#{rule.document_kind}, already defined in #{seen[key]}"
+  end
+  seen[key] = file
+
+  # 4. The window has to run in the right direction.
+  opens = rule.data["window_opens_days_before"]
+  closes = rule.data["window_closes_days_before"]
+  if opens <= closes
+    errors << "#{file}: window_opens_days_before (#{opens}) must be greater than " \
+              "window_closes_days_before (#{closes}) — both count backwards from expiry"
+  end
+
+  # 5. Durations must be ordered, everywhere they appear.
+  durations = {
+    "processing_days_domestic" => rule.data["processing_days_domestic"],
+    "processing_days_abroad" => rule.data["processing_days_abroad"]
+  }
+  (rule.data["abroad_overrides"] || {}).each do |origin, override|
+    durations["abroad_overrides/#{origin}/processing_days"] = override["processing_days"]
+  end
+  durations.each do |label, duration|
+    next unless duration
+    next if duration["worst_case"] >= duration["typical"]
+
+    errors << "#{file}: #{label}: worst_case (#{duration["worst_case"]}) is less than " \
+              "typical (#{duration["typical"]})"
+  end
+
+  # 6. Provenance. "verified" is a claim about a human having checked an official
+  #    page, so it requires an official page to have been checked.
+  if rule.status == "verified" && Array(rule.data["source_urls"]).none? { |u| official?(u) }
+    errors << "#{file}: status is verified but no source_urls is an official government domain"
+  end
+
+  (rule.data["abroad_overrides"] || {}).each do |origin, override|
+    next unless override["status"] == "verified"
+
+    sources = Array(override["source_urls"]) + Array(rule.data["source_urls"])
+    next if sources.any? { |u| official?(u) }
+
+    errors << "#{file}: abroad_overrides/#{origin} is verified but cites no official source"
+  end
+
+  # 7. Verification decays. This is the spec's "ongoing verification discipline"
+  #    expressed as something that can fail a build.
+  if rule.status == "verified" && (verified_on = rule.data["verified_on"])
+    age = (Date.today - Date.parse(verified_on)).to_i
+    if age > options[:max_age_days]
+      errors << "#{file}: last verified #{age} days ago (limit #{options[:max_age_days]}) — " \
+                "re-check against #{rule.data["authority_url"]} or set status back to draft"
+    elsif age > options[:max_age_days] * 0.75
+      warnings << "#{file}: verification is #{age} days old and due for a re-check"
+    end
+  end
+
+  # 8. A rule offering per-origin branches should say how long those branches take.
+  if rule.data["abroad_overrides"] && rule.data["processing_days_abroad"].nil?
+    missing = rule.data["abroad_overrides"].reject { |_, ov| ov["processing_days"] }.keys
+    unless missing.empty?
+      warnings << "#{file}: no processing_days_abroad, and overrides #{missing.join(", ")} " \
+                  "do not supply their own — these will fall back to domestic timings, which is " \
+                  "almost certainly wrong"
+    end
+  end
+
+  # 9. Feasibility. Reported rather than rejected: a process that genuinely
+  #    cannot be completed inside its own legal window is a fact about the world,
+  #    and it is exactly the fact a reader most needs to be told.
+  rule.contexts.each do |context|
+    timeline = rule.resolve(context).timeline
+    next if timeline.feasible?
+
+    detail = timeline.covered_by_grace? ? "late renewal is permitted" : "no grace period"
+    warnings << "#{file} [#{context}]: not completable inside the renewal window — needs " \
+                "#{timeline.required_lead_days} days of lead time but the window opens only " \
+                "#{timeline.window_opens_days_before} days before expiry " \
+                "(#{timeline.shortfall_days} days short, #{detail})"
+  end
+
+  # 10. Drafts are fine; silent drafts are not.
+  warnings << "#{file}: status is draft — figures are unconfirmed" if rule.status == "draft"
+end
+
+if dataset.rules.empty?
+  errors << "no rule files found under rules/"
+end
+
+countries = dataset.countries.length
+puts "Checked #{dataset.rules.length} rule(s) across #{countries} " \
+     "#{countries == 1 ? "country" : "countries"}, covering #{dataset.playbooks.length} playbook page(s)."
+
+unless warnings.empty?
+  puts "\nWarnings (#{warnings.length}):"
+  warnings.each { |w| puts "  ! #{w}" }
+end
+
+unless errors.empty?
+  puts "\nErrors (#{errors.length}):"
+  errors.each { |e| puts "  x #{e}" }
+end
+
+if errors.any?
+  puts "\nFAILED"
+  exit 1
+elsif options[:strict] && warnings.any?
+  puts "\nFAILED (--strict: warnings are failures)"
+  exit 1
+else
+  puts "\nOK"
+  exit 0
+end

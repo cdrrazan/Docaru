@@ -1,0 +1,282 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cdrrazan/Renewaru/schema/renewal-rule.schema.json",
+  "title": "RenewalRule",
+  "description": "A single country x document-kind renewal rule. One file per rule, under rules/<country_code lowercased>/<document_kind>.yml. This is public-plane data: it contains no user information and is safe to serve, cache, and mirror.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "country_code",
+    "document_kind",
+    "title",
+    "status",
+    "window_opens_days_before",
+    "window_closes_days_before",
+    "processing_days_domestic",
+    "required_documents",
+    "cost",
+    "authority_url",
+    "lapse_consequence",
+    "source_urls"
+  ],
+  "properties": {
+    "schema_version": {
+      "description": "Version of this schema the file targets. Bumped only on breaking changes.",
+      "type": "integer",
+      "const": 1
+    },
+    "country_code": {
+      "description": "ISO 3166-1 alpha-2 code of the country whose authority issues and renews the document. NOT the country the holder currently lives in.",
+      "type": "string",
+      "pattern": "^[A-Z]{2}$"
+    },
+    "document_kind": {
+      "description": "Stable machine identifier for the document type. Closed set: extending it is a deliberate schema PR, so that the consuming app never has to guess at a kind it has no UI for.",
+      "type": "string",
+      "enum": [
+        "passport",
+        "national_id",
+        "drivers_licence",
+        "vehicle_registration",
+        "residence_permit",
+        "visa",
+        "work_permit",
+        "tax_id",
+        "police_clearance",
+        "professional_licence",
+        "insurance_policy",
+        "tenancy_agreement",
+        "warranty",
+        "domain_name"
+      ]
+    },
+    "title": {
+      "description": "Human name of the document as the issuing country calls it, in English. Shown as the playbook page heading.",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 120
+    },
+    "status": {
+      "description": "Provenance state. 'draft' means the numbers are unconfirmed and the app must render a prominent warning. Only a human who has checked the authority's own page may set 'verified', and doing so requires verified_on and verified_by.",
+      "type": "string",
+      "enum": ["draft", "verified"]
+    },
+    "validity_years": {
+      "description": "How long a freshly issued document lasts. Optional: some documents (police certificates) have no fixed validity and are instead accepted for a period set by whoever asks for them.",
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 100
+    },
+    "window_opens_days_before": {
+      "description": "Earliest you may legally apply, counted in days before expiry. A rule that only permits renewal inside the final year is 365. Use a large value (e.g. 3650) where the authority sets no lower bound.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 36500
+    },
+    "window_closes_days_before": {
+      "description": "Latest you may still apply as a renewal, counted in days before expiry. 0 means up to the expiry date itself. Negative means a grace period AFTER expiry during which renewal is still possible rather than a fresh application.",
+      "type": "integer",
+      "minimum": -3650,
+      "maximum": 36500
+    },
+    "processing_days_domestic": {
+      "$ref": "#/$defs/duration",
+      "description": "Calendar days from submitting to holding the document, applying inside the issuing country."
+    },
+    "processing_days_abroad": {
+      "$ref": "#/$defs/duration",
+      "description": "Calendar days when applying from outside the issuing country, via a mission. Omit only where applying from abroad is impossible; say so in notes."
+    },
+    "buffer_days": {
+      "description": "Safety margin added on top of worst-case processing when computing the start-by date. Larger where the process has a step outside the applicant's control (a police report, a document couriered to a capital).",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 365,
+      "default": 14
+    },
+    "required_documents": {
+      "description": "What the applicant must physically bring or upload. Each entry is one item, phrased as a noun the applicant would recognise.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/requirement" }
+    },
+    "cost": { "$ref": "#/$defs/cost" },
+    "authority_url": {
+      "description": "The issuing authority's own page for this process. Must be a government domain wherever one exists; never a blog or an agent.",
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "appointment_required": {
+      "description": "Whether a booked slot is needed before turning up. Where true, appointment lead time is itself part of the delay and belongs in notes.",
+      "type": "boolean"
+    },
+    "in_person_required": {
+      "description": "Whether the applicant must attend in person, typically for biometrics. This is what makes renewing from abroad expensive: it forces travel to a mission.",
+      "type": "boolean"
+    },
+    "lapse_consequence": {
+      "description": "What actually happens if the deadline is missed. Concrete and specific: the reason the user acts.",
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 600
+    },
+    "notes": {
+      "description": "Anything that changes the plan but does not fit a field: seasonal backlogs, mission-specific quirks, recent process changes.",
+      "type": "string",
+      "maxLength": 2000
+    },
+    "verified_on": {
+      "description": "ISO date a human last checked this rule against the authority's own page. Required when status is 'verified'. Staleness is measured from here.",
+      "type": ["string", "null"],
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "verified_by": {
+      "description": "GitHub handle of that human, so a wrong number has an owner who can be asked.",
+      "type": ["string", "null"],
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "source_urls": {
+      "description": "Where the numbers came from. At least one required, and at least one must be an official source for a rule to reach 'verified'.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "format": "uri",
+        "pattern": "^https://"
+      }
+    },
+    "abroad_overrides": {
+      "description": "Per-origin differences, keyed by the ISO 3166-1 alpha-2 code of the country the applicant is applying FROM. A Nepali passport renewed from London and from Doha share a legal window but not a queue, a fee, or a mission. Each override supplies only the fields that differ; everything else falls back to the top level.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[A-Z]{2}$" },
+      "additionalProperties": { "$ref": "#/$defs/override" },
+      "minProperties": 1
+    }
+  },
+  "allOf": [
+    {
+      "description": "A verified rule must name a date and a person. Without both, 'verified' is an unfalsifiable claim.",
+      "if": { "properties": { "status": { "const": "verified" } }, "required": ["status"] },
+      "then": {
+        "required": ["verified_on", "verified_by"],
+        "properties": {
+          "verified_on": { "type": "string" },
+          "verified_by": { "type": "string" }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "duration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["typical", "worst_case"],
+      "properties": {
+        "typical": {
+          "description": "What most applicants experience, in calendar days.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3650
+        },
+        "worst_case": {
+          "description": "The tail the applicant must actually plan against. Reminders are computed from this, never from typical: a reminder that fires in time for the median case fails exactly the people it most needed to reach.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3650
+        }
+      }
+    },
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["item"],
+      "properties": {
+        "item": {
+          "description": "The thing itself, e.g. 'Previous passport, original'.",
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 200
+        },
+        "detail": {
+          "description": "Format constraints that trip people up: photo dimensions, notarisation, certified translation.",
+          "type": "string",
+          "maxLength": 500
+        },
+        "obtain_lead_days": {
+          "description": "How long this supporting document itself takes to get. The single most important field in the schema: it is what turns 'renew by March' into 'start in November', because a prerequisite with a long lead time silently extends the whole process.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3650
+        },
+        "optional": {
+          "description": "True where the item is only needed in some circumstances, described in detail.",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount", "currency"],
+      "properties": {
+        "amount": {
+          "description": "Official fee for the standard service. Excludes couriers, agents, and travel.",
+          "type": "number",
+          "minimum": 0
+        },
+        "currency": {
+          "description": "ISO 4217 code.",
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "expedited_amount": {
+          "description": "Fee for the fast-track service where one exists.",
+          "type": "number",
+          "minimum": 0
+        },
+        "note": {
+          "description": "Anything conditional about the fee: page count, age band, payment method the authority insists on.",
+          "type": "string",
+          "maxLength": 300
+        }
+      }
+    },
+    "override": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "processing_days": { "$ref": "#/$defs/duration" },
+        "cost": { "$ref": "#/$defs/cost" },
+        "authority_url": {
+          "description": "The specific mission's page, which is what a reader in that country actually needs.",
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "appointment_required": { "type": "boolean" },
+        "additional_documents": {
+          "description": "Items this origin demands on top of the base list, e.g. proof of local residence.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/requirement" }
+        },
+        "notes": { "type": "string", "maxLength": 2000 },
+        "status": { "type": "string", "enum": ["draft", "verified"] },
+        "verified_on": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "verified_by": { "type": ["string", "null"] },
+        "source_urls": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^https://" }
+        }
+      }
+    }
+  }
+}

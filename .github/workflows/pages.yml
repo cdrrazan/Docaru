@@ -1,0 +1,46 @@
+name: Publish playbooks
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: false
+
+      # Nothing gets published that has not passed validation first. A wrong
+      # renewal date is worse than no page at all.
+      - name: Validate before publishing
+        run: ruby bin/validate --max-age-days 365
+
+      - name: Build
+        run: ruby bin/build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

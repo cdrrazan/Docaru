@@ -1,0 +1,133 @@
+schema_version: 1
+country_code: NP
+document_kind: vehicle_registration
+title: Nepal Vehicle Registration ("Bluebook")
+status: draft
+
+# Renewed annually, against the Nepali fiscal year rather than the anniversary of
+# purchase, which is why owners abroad routinely miss it: the deadline is not on
+# the date they expect.
+validity_years: 1
+
+window_opens_days_before: 90
+window_closes_days_before: -1095
+
+processing_days_domestic:
+  typical: 1
+  worst_case: 7
+
+# There is no route to renew from abroad directly. The count below is the realistic
+# elapsed time for the representative route: attest a power of attorney at the
+# mission, courier it to Nepal, have a relative or agent attend the transport office.
+processing_days_abroad:
+  typical: 30
+  worst_case: 75
+
+buffer_days: 30
+
+required_documents:
+  - item: Original bluebook (vehicle registration certificate)
+  - item: Valid third-party motor insurance for the coming year
+    detail: >-
+      Must already be in force before the transport office will renew. This is a hard
+      prerequisite, not a parallel task — see rules/np/insurance-policy.yml.
+    obtain_lead_days: 7
+  - item: Vehicle tax payment for the year
+    detail: Paid at the transport office or the provincial revenue counter at the same visit.
+  - item: Valid pollution (emission) test certificate
+    detail: Obtained from an authorised testing centre; same-day, but the vehicle must be present.
+    obtain_lead_days: 3
+  - item: Citizenship certificate of the registered owner, copy
+
+cost:
+  amount: 0
+  currency: NPR
+  note: >-
+    The renewal itself is a service charge, but the amount payable at the counter is
+    dominated by annual vehicle tax, which varies by engine capacity, vehicle class,
+    and province. Treat the total as vehicle-specific rather than a fixed fee.
+
+authority_url: https://www.dotm.gov.np/
+appointment_required: false
+in_person_required: true
+
+lapse_consequence: >-
+  Late renewal attracts a fine that escalates the longer it runs, calculated as a
+  percentage of the tax due, so the cost of the delay compounds rather than sitting
+  flat. Driving on an unrenewed bluebook risks the vehicle being impounded at a traffic
+  check. Left long enough, the registration can be treated as abandoned, at which point
+  restoring it becomes an administrative case rather than a payment.
+
+notes: >-
+  This is the diaspora case the product is for: the vehicle is in Nepal, the owner is
+  not, and nobody is watching the date. The whole plan has to be built backwards from
+  the power of attorney, which is the only slow step — the counter visit itself is a
+  morning. An owner who starts the month before expiry has already missed it; the
+  attested document alone needs about that long to reach Nepal.
+
+verified_on: null
+verified_by: null
+
+source_urls:
+  - https://www.dotm.gov.np/
+  - https://ird.gov.np/
+
+abroad_overrides:
+  GB:
+    status: draft
+    processing_days:
+      typical: 30
+      worst_case: 70
+    authority_url: https://uk.nepalembassy.gov.np/
+    additional_documents:
+      - item: Power of attorney attested by the Nepali Embassy in London
+        detail: >-
+          Names the representative who will attend the transport office. The attested
+          original has to physically reach Nepal, so the courier leg is part of the wait.
+        obtain_lead_days: 30
+    notes: Attested in London, then couriered to the representative in Nepal.
+    source_urls:
+      - https://uk.nepalembassy.gov.np/
+
+  US:
+    status: draft
+    processing_days:
+      typical: 35
+      worst_case: 85
+    authority_url: https://us.nepalembassy.gov.np/
+    additional_documents:
+      - item: Power of attorney, notarised locally then attested by the Nepali mission
+        detail: >-
+          Two sequential steps rather than one, and the notary appointment has to happen
+          before the mission will look at it.
+        obtain_lead_days: 40
+    notes: >-
+      Documents executed in the US are commonly notarised locally before mission
+      attestation, adding a step ahead of the one that is already the bottleneck.
+    source_urls:
+      - https://us.nepalembassy.gov.np/
+
+  AU:
+    status: draft
+    processing_days:
+      typical: 35
+      worst_case: 85
+    authority_url: https://au.nepalembassy.gov.np/
+    additional_documents:
+      - item: Power of attorney attested by the Nepali Embassy in Canberra
+        detail: Attestation is in Canberra only; posting the document in adds to the wait.
+        obtain_lead_days: 35
+    source_urls:
+      - https://au.nepalembassy.gov.np/
+
+  QA:
+    status: draft
+    processing_days:
+      typical: 30
+      worst_case: 70
+    authority_url: https://qa.nepalembassy.gov.np/
+    additional_documents:
+      - item: Power of attorney attested by the Nepali Embassy in Doha
+        obtain_lead_days: 30
+    source_urls:
+      - https://qa.nepalembassy.gov.np/
