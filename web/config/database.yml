@@ -24,7 +24,15 @@ default: &default
   # MySQL closes idle connections after eight hours by default, which otherwise
   # surfaces as a mystifying "server has gone away" on the first request of the
   # morning — precisely when the reminder sweep has just run.
-  reconnect: true
+  #
+  # Retried by Active Record rather than by the client's own MYSQL_OPT_RECONNECT,
+  # which is deprecated in MySQL 8.0.34+ and prints a warning on every connect.
+  # It is also the safer of the two: the client-level option silently reconnects
+  # mid-session and drops the transaction, prepared statements and session
+  # variables — including the strict sql_mode set below — whereas Active Record
+  # only retries a query it knows never began.
+  connection_retries: 3
+  retry_deadline: 5
   variables:
     # Reject silent truncation and invalid dates rather than storing them. An
     # expiry date quietly coerced to 0000-00-00 would produce a confidently
