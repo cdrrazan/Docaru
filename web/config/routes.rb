@@ -1,14 +1,18 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  root "pages#home"
+
+  # Public, crawlable, no account required. Every playbook is simultaneously a
+  # product feature and a page that ranks, so these URLs are readable and stable
+  # — "from-gb" rather than a query string, because that is the part of the URL
+  # that matches what somebody typed into a search box.
+  get "playbooks", to: "playbooks#index", as: :playbooks
+  get "playbooks/:country_code/:document_kind/from-:origin",
+      to: "playbooks#show", as: :origin_playbook,
+      constraints: { country_code: /[a-z]{2}/, origin: /[a-z]{2}/ }
+  get "playbooks/:country_code/:document_kind",
+      to: "playbooks#show", as: :playbook,
+      constraints: { country_code: /[a-z]{2}/ }
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
-
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-
-  # Defines the root path route ("/")
-  # root "posts#index"
 end

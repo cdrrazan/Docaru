@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "cgi"
+require_relative "countries"
 
 module Renewaru
   # Renders one resolved rule as a standalone HTML page.
@@ -10,15 +11,6 @@ module Renewaru
   # acquisition channel that compounds, and a page a crawler cannot read does not
   # exist. Every fact on the page is in the HTML the server sends.
   class Playbook
-    COUNTRY_NAMES = {
-      "NP" => "Nepal", "GB" => "the United Kingdom", "US" => "the United States",
-      "AU" => "Australia", "QA" => "Qatar", "AE" => "the United Arab Emirates",
-      "MY" => "Malaysia", "KR" => "South Korea", "JP" => "Japan", "IN" => "India",
-      "CA" => "Canada", "DE" => "Germany", "PT" => "Portugal", "SA" => "Saudi Arabia"
-    }.freeze
-
-    ADJECTIVES = { "NP" => "Nepali" }.freeze
-
     attr_reader :resolved, :repo_url
 
     def initialize(resolved, repo_url:)
@@ -29,7 +21,7 @@ module Renewaru
     def rule = resolved.rule
     def timeline = resolved.timeline
 
-    def self.country_name(code) = COUNTRY_NAMES.fetch(code, code)
+    def self.country_name(code) = Countries.name(code)
 
     def place
       resolved.domestic? ? "inside #{self.class.country_name(rule.country_code)}" : "from #{self.class.country_name(resolved.context)}"
@@ -163,24 +155,10 @@ module Renewaru
     end
 
     def window_section
-      opens = resolved.window_opens_days_before
-      closes = resolved.window_closes_days_before
-      grace = resolved.grace_days
-
-      close_text = if closes.positive?
-                     "Applications close #{closes} days before expiry."
-                   elsif closes.zero?
-                     "Applications close on the expiry date itself; there is no grace period afterwards."
-                   else
-                     "Late applications are still accepted for #{grace} days after expiry, though penalties may apply."
-                   end
-
-      open_text = opens >= 3650 ? "You may apply at any time." : "The earliest you may apply is #{opens} days before expiry."
-
       <<~HTML
         <section>
           <h2>The renewal window</h2>
-          <p>#{e(open_text)} #{e(close_text)}</p>
+          <p>#{e(timeline.window_opens_phrase)} #{e(timeline.window_closes_phrase)}</p>
           #{infeasibility_note}
         </section>
       HTML

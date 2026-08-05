@@ -2,6 +2,7 @@
 
 require_relative "rule"
 require_relative "timeline"
+require_relative "countries"
 require_relative "schema_validator"
 
 module Renewaru
@@ -11,7 +12,14 @@ module Renewaru
   class Dataset
     attr_reader :rules, :load_errors
 
-    def self.load(dir = File.join(ROOT, "rules"))
+    # Overridable so a deployed image can ship the rules anywhere it likes —
+    # the self-hosted container puts them beside the app rather than one
+    # directory up from it.
+    def self.rules_dir
+      ENV.fetch("RENEWARU_RULES_DIR") { File.join(ROOT, "rules") }
+    end
+
+    def self.load(dir = rules_dir)
       rules = []
       errors = []
 

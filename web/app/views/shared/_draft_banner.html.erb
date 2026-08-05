@@ -1,0 +1,9 @@
+<% if resolved.draft? %>
+  <div class="banner banner-draft">
+    <strong>These figures are unverified.</strong>
+    Nobody has yet checked this rule against the issuing authority's own published information, so
+    treat every number here as an estimate. Confirm with
+    <a href="<%= resolved.authority_url %>" rel="nofollow noopener">the authority</a>
+    before you rely on it.
+  </div>
+<% end %>

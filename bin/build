@@ -51,7 +51,7 @@ cards = grouped.sort.map do |country, group|
     "<div class=\"kind\"><h3>#{CGI.escapeHTML(rule.title)}#{draft}</h3><ul>#{links}</ul></div>"
   end.join("\n")
 
-  "<section class=\"country\"><h2>#{CGI.escapeHTML(Renewaru::Playbook.country_name(country)).capitalize}</h2>#{rows}</section>"
+  "<section class=\"country\"><h2>#{CGI.escapeHTML(Renewaru::Countries.title(country))}</h2>#{rows}</section>"
 end.join("\n")
 
 drafts = dataset.rules.count { |r| r.status == "draft" }
