@@ -42,10 +42,15 @@
   </head>
 
   <body>
+    <%# Five nav links stand between the keyboard on every page and the thing %>
+    <%# the reader came for. Visible on focus, so it is discoverable rather %>
+    <%# than a secret. %>
+    <a class="skip" href="#content">Skip to content</a>
+
     <header class="masthead">
       <div class="wrap">
         <a class="brand" href="<%= root_path %>">Renewal playbooks</a>
-        <nav>
+        <nav aria-label="Main">
           <a href="<%= calculator_path %>">When to start</a>
           <a href="<%= playbooks_path %>">Playbooks</a>
           <a href="<%= plan_path %>">Pricing</a>
@@ -60,9 +65,16 @@
       </div>
     </header>
 
-    <main class="wrap">
+    <main class="wrap" id="content" tabindex="-1">
+      <%# Flashes appear after a redirect, so a screen reader has already begun %>
+      <%# reading the new page by the time they arrive. Announced politely, %>
+      <%# except an alert — "that document could not be saved" is not a %>
+      <%# footnote to whatever is being read. %>
       <% flash.each do |type, message| %>
-        <div class="flash <%= "flash-alert" if type.to_s == "alert" %>"><%= message %></div>
+        <% alert = type.to_s == "alert" %>
+        <div class="flash <%= "flash-alert" if alert %>"
+             role="<%= alert ? "alert" : "status" %>"
+             aria-live="<%= alert ? "assertive" : "polite" %>"><%= message %></div>
       <% end %>
 
       <%= yield %>

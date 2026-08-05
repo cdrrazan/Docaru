@@ -58,7 +58,7 @@
 <% end %>
 
 <% if @submitted && @calculation.errors.any? %>
-  <div class="errors">
+  <div class="errors" role="alert" tabindex="-1">
     <strong>Not quite enough to answer:</strong>
     <ul>
       <% @calculation.errors.each do |error| %>
@@ -83,7 +83,7 @@
 
   <section>
     <h2>Your dates</h2>
-    <div class="scroll">
+    <div class="scroll" tabindex="0" role="region" aria-label="Your dates">
       <table>
         <tbody>
           <tr>
