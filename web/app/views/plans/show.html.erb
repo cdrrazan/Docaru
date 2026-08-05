@@ -63,13 +63,42 @@
       <%= pluralize(@household.members.count, "person") %>.
     </p>
 
-    <% if @household.plan == "free" %>
-      <div class="banner">
-        Billing is not wired up yet — there is no payment processor behind this button. It switches
-        the plan so the limits can be exercised, and it is here rather than hidden because a fake
-        checkout would be worse than an honest one.
+    <% if (subscription = @household.subscription)&.troubled? %>
+      <div class="banner banner-warn">
+        <strong>There is a problem with the payment for this household.</strong>
+        Paddle will retry the card over the next few days. <strong>Every reminder keeps
+        working throughout</strong>, and it keeps working even if the payment never succeeds —
+        nobody misses a visa deadline over a card.
       </div>
-      <%= button_to "Switch to the household plan", plan_path, method: :patch, class: "btn" %>
+    <% end %>
+
+    <% if @household.over_document_limit? || @household.over_member_limit? %>
+      <div class="banner">
+        This household is above the free limits. Nothing has been deleted and everything is still
+        watched — you cannot add anything new until you are back under, or back on the household
+        plan.
+      </div>
+    <% end %>
+
+    <% if @household.plan == "free" %>
+      <% if Paddle.configured? %>
+        <%= button_to "Upgrade to the household plan", plan_path, method: :patch, class: "btn" %>
+        <p class="note">
+          Checkout is handled by Paddle, who are the seller of record and will show the price in
+          your own currency with any tax already included.
+        </p>
+      <% else %>
+        <div class="banner">
+          Billing is not switched on for this instance, so there is nothing behind this button and
+          it is not shown. Every alert and every playbook works regardless — those are never
+          paywalled.
+        </div>
+      <% end %>
+    <% elsif subscription&.renews_on %>
+      <p class="note">
+        <%= subscription.canceled_at ? "Access continues until" : "Renews on" %>
+        <%= subscription.renews_on.strftime("%-d %B %Y") %>.
+      </p>
     <% end %>
   </section>
 <% end %>

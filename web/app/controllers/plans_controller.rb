@@ -10,10 +10,28 @@ class PlansController < ApplicationController
     @household = household if authenticated?
   end
 
-  # Deliberately not a checkout. No payment processor is wired up yet, and
-  # pretending otherwise with a dead button would be worse than saying so.
+  # Opens a Paddle checkout and sends the buyer to it. The plan does not move
+  # here: it moves when Paddle says the money arrived, on the webhook. A browser
+  # that has been redirected back is evidence of nothing.
   def update
-    household.update!(plan: "household")
-    redirect_to dashboard_path, notice: "Switched to the household plan."
+    return redirect_to plan_path, alert: unconfigured_message unless Paddle.configured?
+
+    checkout = Paddle.create_checkout(
+      household: household,
+      email: current_user.email_address,
+      success_url: dashboard_url
+    )
+
+    redirect_to checkout, allow_other_host: true
+  rescue Paddle::Error => e
+    Rails.error.report(e, handled: true, context: { household_id: household.id })
+    redirect_to plan_path, alert: "Could not open the checkout just now. Nothing was charged — please try again."
+  end
+
+  private
+
+  def unconfigured_message
+    "Billing is not switched on for this instance. Nothing was charged, and every reminder " \
+      "you already have keeps working."
   end
 end

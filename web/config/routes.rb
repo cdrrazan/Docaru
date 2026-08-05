@@ -26,6 +26,11 @@ Rails.application.routes.draw do
 
   resource :plan, only: %i[show update]
 
+  # The only thing that moves a household onto a paid plan. Outside the
+  # authenticated section on purpose: Paddle is the caller, and it proves itself
+  # with a signature rather than a session.
+  post "webhooks/paddle", to: "paddle_webhooks#create"
+
   resource :session
   resource :registration, only: %i[new create]
   resources :passwords, param: :token

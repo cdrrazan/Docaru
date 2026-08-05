@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_06_012906) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_06_013702) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -114,6 +114,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_06_012906) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "subscriptions", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.datetime "canceled_at"
+    t.datetime "created_at", null: false
+    t.bigint "household_id", null: false
+    t.datetime "last_event_at"
+    t.string "paddle_customer_id"
+    t.string "paddle_subscription_id", null: false
+    t.string "price_id"
+    t.date "renews_on"
+    t.string "status", null: false
+    t.datetime "updated_at", null: false
+    t.index ["household_id"], name: "index_subscriptions_on_household_id", unique: true
+    t.index ["paddle_subscription_id"], name: "index_subscriptions_on_paddle_subscription_id", unique: true
+  end
+
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email_address", null: false
@@ -125,6 +140,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_06_012906) do
     t.index ["household_id"], name: "index_users_on_household_id"
   end
 
+  create_table "webhook_events", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "event_id", null: false
+    t.string "event_type", null: false
+    t.datetime "occurred_at"
+    t.string "provider", null: false
+    t.datetime "updated_at", null: false
+    t.index ["provider", "event_id"], name: "index_webhook_events_on_provider_and_event_id", unique: true
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "attachments", "documents"
@@ -133,5 +158,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_06_012906) do
   add_foreign_key "push_subscriptions", "users"
   add_foreign_key "reminders", "documents"
   add_foreign_key "sessions", "users"
+  add_foreign_key "subscriptions", "households"
   add_foreign_key "users", "households"
 end
