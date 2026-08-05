@@ -8,7 +8,7 @@
 
 <%= form_with model: @user, url: registration_path, method: :post do |form| %>
   <% if @user.errors.any? %>
-    <div class="errors">
+    <div class="errors" role="alert" tabindex="-1">
       <strong>That did not work:</strong>
       <ul>
         <% @user.errors.full_messages.each do |message| %>

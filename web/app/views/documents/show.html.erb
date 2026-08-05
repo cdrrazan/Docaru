@@ -22,7 +22,7 @@
 
 <section>
   <h2>Details</h2>
-  <div class="scroll">
+  <div class="scroll" tabindex="0" role="region" aria-label="Details">
     <table>
       <tbody>
         <tr>
@@ -71,10 +71,14 @@
     Anchored to the start date, not the expiry date — a reminder that arrives when it expires is
     correct and useless.
   </p>
-  <div class="scroll">
+  <div class="scroll" tabindex="0" role="region" aria-label="Reminder schedule">
     <table>
       <thead>
-        <tr><th>Alert</th><th class="num">Date</th><th>Status</th></tr>
+        <tr>
+          <th scope="col">Alert</th>
+          <th scope="col" class="num">Date</th>
+          <th scope="col">Status</th>
+        </tr>
       </thead>
       <tbody>
         <% sent = @document.reminders.index_by(&:kind) %>

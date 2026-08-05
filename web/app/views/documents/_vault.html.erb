@@ -60,7 +60,11 @@
     </p>
   </div>
 
-  <p data-vault-target="status" class="note"></p>
+  <%# Every reply the vault gives — unlocked, wrong passphrase, upload finished %>
+  <%# — is written here and nowhere else. Without a live region a screen reader %>
+  <%# never learns whether the passphrase worked, on the one screen where %>
+  <%# guessing wrong means silently uploading nothing. %>
+  <p data-vault-target="status" class="note" role="status" aria-live="polite"></p>
 
   <noscript>
     <div class="banner banner-warn">

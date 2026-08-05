@@ -1,6 +1,6 @@
 <%= form_with model: member do |form| %>
   <% if member.errors.any? %>
-    <div class="errors">
+    <div class="errors" role="alert" tabindex="-1">
       <strong>That did not work:</strong>
       <ul>
         <% member.errors.full_messages.each do |message| %>

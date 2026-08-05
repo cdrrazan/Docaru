@@ -48,14 +48,17 @@
 
   <section>
     <h2>Everything you are tracking</h2>
-    <div class="scroll">
+    <div class="scroll" tabindex="0" role="region" aria-label="Everything you are tracking">
       <table>
+        <caption class="visually-hidden">
+          Every document you are tracking, most urgent first.
+        </caption>
         <thead>
           <tr>
-            <th>Document</th>
-            <th>Person</th>
-            <th class="num">Start by</th>
-            <th>Status</th>
+            <th scope="col">Document</th>
+            <th scope="col">Person</th>
+            <th scope="col" class="num">Start by</th>
+            <th scope="col">Status</th>
           </tr>
         </thead>
         <tbody>
