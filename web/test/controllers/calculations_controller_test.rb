@@ -11,6 +11,16 @@ class CalculationsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".answer .headline", false
   end
 
+  # This is the top of the funnel. Arriving and being told off for three fields
+  # you have not reached yet is the worst possible first impression, and it is
+  # what happened while applying_from defaulted to "domestic" and made the
+  # parameter hash permanently non-blank.
+  test "arriving does not count as submitting" do
+    get calculator_path
+
+    assert_select ".errors", false
+  end
+
   test "answers a complete question" do
     get calculator_path, params: { document: "NP:passport", from: "GB", expires_on: 2.years.from_now.to_date.to_s }
 
@@ -56,5 +66,21 @@ class CalculationsControllerTest < ActionDispatch::IntegrationTest
     get calculator_path, params: { document: "nonsense", expires_on: "not-a-date" }
 
     assert_response :success
+  end
+
+  # Every expiry date is a distinct URL, so an indexable result page is an
+  # unbounded set of near-identical pages competing with the playbook that
+  # should be ranking. Shareable and indexable are different requirements.
+  test "an answered question is shareable but not indexable" do
+    get calculator_path, params: { document: "NP:passport", from: "GB", expires_on: "2028-06-30" }
+
+    assert_select "meta[name=robots][content=?]", "noindex,follow"
+    assert_select "link[rel=canonical][href=?]", calculator_url
+  end
+
+  test "the empty form stays indexable" do
+    get calculator_path
+
+    assert_select "meta[name=robots]", false
   end
 end

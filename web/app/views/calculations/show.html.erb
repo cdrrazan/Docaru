@@ -1,6 +1,17 @@
 <% content_for :title, "When should I start renewing?" %>
 <% content_for :description, "Enter a document and its expiry date and get the date you have to start renewing — computed from real renewal windows, processing times, and prerequisites." %>
 
+<%# A filled-in answer is for sharing, not for indexing. Every expiry date is a %>
+<%# distinct URL, so left crawlable this is an unbounded set of near-identical %>
+<%# pages competing with the playbook that should be ranking instead. The %>
+<%# canonical in the layout already drops the query string; this stops the %>
+<%# result being indexed on its own. %>
+<% if @submitted %>
+  <% content_for :robots do %>
+    <meta name="robots" content="noindex,follow">
+  <% end %>
+<% end %>
+
 <h1>When should I start?</h1>
 
 <p class="lede">

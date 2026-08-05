@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc><%= root_url %></loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc><%= calculator_url %></loc>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc><%= playbooks_url %></loc>
+    <priority>0.9</priority>
+  </url>
+<%# One entry per (rule, origin) pair. That pair is the unit somebody actually
+    searches for — "from the UK", not "Nepali passport" — so it is the unit
+    listed here. %>
+<% @playbooks.each do |resolved| %>
+  <url>
+    <loc><%= playbook_url_for(resolved.rule, resolved.context) %></loc>
+    <% if (verified = resolved.verified_on).present? %>
+    <lastmod><%= verified %></lastmod>
+    <% end %>
+    <priority>1.0</priority>
+  </url>
+<% end %>
+</urlset>
