@@ -28,7 +28,11 @@ Rails.application.routes.draw do
   get "dashboard", to: "dashboard#show", as: :dashboard
   resources :members, except: :show
   # No index: the dashboard is the list, sorted by urgency rather than by name.
-  resources :documents, except: :index
+  resources :documents, except: :index do
+    # Ciphertext in, ciphertext out. The server has no key and no code that
+    # would know what to do with one.
+    resources :attachments, only: %i[create show destroy]
+  end
 
   # Reading a passport's machine-readable zone instead of typing it.
   resources :scans, only: %i[new create]
