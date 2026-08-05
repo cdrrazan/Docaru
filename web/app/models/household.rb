@@ -12,6 +12,7 @@ class Household < ApplicationRecord
   has_many :users, dependent: :destroy
   has_many :members, dependent: :destroy
   has_many :documents, through: :members
+  has_one :subscription, dependent: :destroy
 
   has_secure_token :vault_salt, length: 24
 
@@ -27,11 +28,18 @@ class Household < ApplicationRecord
   def can_add_document? = documents.count < document_limit
   def can_add_member? = members.count < member_limit
 
-  # Deliberately not a limit check. Reminders are never gated by plan — a
-  # household over its document limit still gets alerted about everything it
-  # already has, because the alternative is letting somebody lose their visa
-  # over a billing state.
+  # Deliberately not a limit check, and deliberately not a billing check.
+  # Reminders are never gated by plan — a household over its document limit, or
+  # with a card that bounced this morning, still gets alerted about everything
+  # it already has. Somebody whose card expires while they are abroad is exactly
+  # the person most likely to need the alert.
   def alerting? = true
+
+  # After a downgrade a household can be over its limit and stay there: nothing
+  # is deleted and nothing stops being watched. What lapsing costs is the
+  # ability to add more — capacity, not safety.
+  def over_document_limit? = documents.count > document_limit
+  def over_member_limit? = members.count > member_limit
 
   # Generated lazily so existing households pick one up on first vault use.
   # Not a secret: its job is to stop one precomputed attack from working

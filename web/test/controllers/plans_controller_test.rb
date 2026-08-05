@@ -25,14 +25,41 @@ class PlansControllerTest < ActionDispatch::IntegrationTest
     assert_select "p", /household plan/
   end
 
-  test "upgrading changes the limits" do
+  # The button opens a checkout; it does not grant anything. The plan moves when
+  # Paddle says the money arrived, on the webhook — a browser that has been
+  # redirected back is evidence of nothing.
+  test "clicking upgrade never grants the plan by itself" do
     sign_in_as users(:two) # free plan
-    assert_equal 1, households(:two).member_limit
 
     patch plan_path
 
+    assert_equal "free", households(:two).reload.plan
+  end
+
+  test "an instance with no billing configured says so instead of failing" do
+    sign_in_as users(:two)
+
+    patch plan_path
+
+    assert_redirected_to plan_path
+    follow_redirect!
+    assert_select ".flash-alert", /not switched on/
+  end
+
+  # Entitlement is derived from the subscription, never assigned in two places.
+  test "an active subscription is what grants the household plan" do
+    households(:two).create_subscription!(paddle_subscription_id: "sub_1", status: "active").apply!
+
     assert_equal "household", households(:two).reload.plan
     assert_equal 6, households(:two).member_limit
+  end
+
+  test "the upgrade button is hidden when billing is not configured" do
+    sign_in_as users(:two)
+    get plan_path
+
+    assert_select "input[value='Upgrade to the household plan']", false
+    assert_select ".banner", /not switched on/
   end
 
   test "upgrading requires an account" do
