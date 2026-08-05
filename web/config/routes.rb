@@ -9,6 +9,11 @@ Rails.application.routes.draw do
   # search box.
   get "when-to-start", to: "calculations#show", as: :calculator
 
+  # Built from the dataset on request. A static file would have to be
+  # regenerated every time somebody merges a rule, which is the sort of step
+  # that gets skipped until the sitemap describes a site that no longer exists.
+  get "sitemap.xml", to: "pages#sitemap", as: :sitemap, defaults: { format: "xml" }
+
   get "playbooks", to: "playbooks#index", as: :playbooks
   get "playbooks/:country_code/:document_kind/from-:origin",
       to: "playbooks#show", as: :origin_playbook,

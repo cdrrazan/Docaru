@@ -1,13 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title><%= content_for(:title) || "Renewal playbooks" %></title>
+    <title><%= social_title %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="description" content="<%= content_for(:description) || "Every document you own has a deadline. We tell you which one is next, and exactly what to do about it." %>">
+    <meta name="description" content="<%= social_description %>">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+
+    <link rel="canonical" href="<%= canonical_url %>">
+    <%= yield :robots %>
+
+    <%# Playbook links get pasted into forum threads and family chats. Without %>
+    <%# these a shared link renders as a bare URL, which is the distribution %>
+    <%# channel throwing itself away. %>
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Renewal playbooks">
+    <meta property="og:url" content="<%= canonical_url %>">
+    <meta property="og:title" content="<%= social_title %>">
+    <meta property="og:description" content="<%= social_description %>">
+    <%# Served from public/, not the asset pipeline, so it is joined by hand — %>
+    <%# image_url would look for a digested asset that does not exist. %>
+    <meta property="og:image" content="<%= URI.join(root_url, "/icon.png") %>">
+    <meta name="twitter:card" content="summary">
 
     <%= yield :head %>
 
