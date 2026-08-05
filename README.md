@@ -20,8 +20,6 @@ Per country × document type, versioned in public:
 
 ## Status
 
-Phase 0 of [the product spec](#relationship-to-the-product): the dataset, no application.
-
 | | |
 |---|---|
 | Rules | 5 documents, 1 issuing country (Nepal) |
@@ -29,14 +27,27 @@ Phase 0 of [the product spec](#relationship-to-the-product): the dataset, no app
 | Verified | 0 — **everything here is currently `draft`** |
 
 The figures are structured, sourced, and internally consistent. They are **not yet confirmed
-against the issuing authorities**, and every generated page says so prominently. Verifying them is
-the most valuable contribution available; see [CONTRIBUTING.md](CONTRIBUTING.md).
+against the issuing authorities**, and every page that renders them says so prominently. Verifying
+them is the most valuable contribution available; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Using it
+## Layout
+
+```
+rules/     the public dataset — YAML, one file per country x document
+schema/    the RenewalRule contract
+lib/       the loader, timeline arithmetic, and validator (no gems, no network)
+bin/       validate and build
+web/       the Rails 8 application, which consumes the above
+```
+
+`rules/` sits at the top because it is the public artefact. Somebody correcting a renewal date
+should never have to learn that the application exists.
+
+## Using the dataset
 
 ```sh
-ruby bin/validate    # check every rule
-ruby bin/build       # generate the playbook site into site/
+ruby bin/validate          # check every rule
+ruby bin/build             # generate the static playbook site into site/
 ruby test/schema_test.rb
 ```
 
@@ -44,7 +55,38 @@ Ruby 3.x, no gems, no bundler, no network. That is a deliberate constraint: a da
 toolchain installed before you can fix a typo in it gets fewer corrections.
 
 `bin/build` also emits `site/rules.json` — the whole dataset plus the derived timeline for each
-playbook, which is what an application consumes rather than reimplementing the arithmetic.
+playbook, so a consumer never has to reimplement the arithmetic.
+
+## Running the application
+
+```sh
+cd web
+bin/setup
+bin/rails server
+```
+
+Or self-host the whole thing as one container:
+
+```sh
+cp .env.example .env && $EDITOR .env    # generate the four secrets
+docker compose up -d
+```
+
+One container: web, background jobs, and SQLite. The reminder sweep runs inside the web process
+because that sweep is the product, and it must not be the thing an operator forgets to start.
+(Caveat: the image has not yet been built and tested — see [CHANGELOG.md](CHANGELOG.md).)
+
+## What the application does
+
+- **Playbooks** — every rule rendered per origin, server-rendered, no account needed.
+- **A start-date calculator** — anonymous, nothing stored, the question in the URL so answers can be
+  shared into a forum thread.
+- **Reminders anchored to the start date**, not the expiry date, cascading before and after it.
+- **Prerequisite chains** — warns when one document lapsing will block another's renewal. Nepal will
+  not renew a vehicle registration without current insurance; both dates look fine in isolation.
+- **MRZ reading** — passports and ID cards, with check-digit validation, so a misread is caught
+  rather than stored as somebody's expiry date.
+- **A vault** — scans encrypted in the browser. The server holds ciphertext and no key.
 
 ## How a rule works
 
@@ -89,14 +131,17 @@ Beyond schema conformance, `bin/validate` enforces the things that make the data
   this state, including renewing a Nepali bluebook from the US and renewing a Nepali driving licence
   from anywhere at all.
 
-## Relationship to the product
+## Two data planes
 
-This repository is the public plane — open, shared, and versioned. It contains no user data and is
-designed so that a contributor never touches any.
+The split is structural, not a convention.
 
-The private plane (documents, expiry dates, attachments) lives in the application and is separate by
-construction: attachments encrypted client-side, only extracted metadata server-side. A contributor
-here opens a pull request against a YAML file and comes nowhere near a user's passport scan.
+**Public plane** — `rules/`. Open, versioned, edited by pull request. Contains no user data, so a
+contributor correcting a fee comes nowhere near anybody's passport.
+
+**Private plane** — the application's database. Document metadata (kind, country, expiry) is stored
+in the clear because the server must compute start-by dates and cannot do that over ciphertext.
+Identifiers and notes are encrypted at rest. Attachments are encrypted in the browser, and the
+server has no key. [SECURITY.md](SECURITY.md) is precise about what that does and does not protect.
 
 Alerts and playbooks are never paywalled. Paywalling the safety feature would poison the trust the
 whole thing rests on.
