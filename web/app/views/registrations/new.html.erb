@@ -1,0 +1,48 @@
+<% content_for :title, "Create an account" %>
+
+<h1>Create an account</h1>
+
+<p class="lede">
+  So we can tell you when to start, before it is too late to start.
+</p>
+
+<%= form_with model: @user, url: registration_path, method: :post do |form| %>
+  <% if @user.errors.any? %>
+    <div class="errors">
+      <strong>That did not work:</strong>
+      <ul>
+        <% @user.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :email_address, "Email address" %>
+    <p class="hint">Where the reminders go. This is the whole product, so use one you read.</p>
+    <%= form.email_field :email_address, required: true, autocomplete: "username", autofocus: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :name, "Your name (optional)" %>
+    <%= form.text_field :name, autocomplete: "name" %>
+  </div>
+
+  <div class="field">
+    <%= form.label :password %>
+    <p class="hint">At least 8 characters.</p>
+    <%= form.password_field :password, required: true, autocomplete: "new-password", minlength: 8 %>
+  </div>
+
+  <div class="field">
+    <%= form.label :password_confirmation, "Confirm password" %>
+    <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password" %>
+  </div>
+
+  <%= form.submit "Create account", class: "btn" %>
+<% end %>
+
+<p class="note">
+  Already have an account? <%= link_to "Sign in", new_session_path %>.
+</p>

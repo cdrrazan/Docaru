@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
 class CalculationsController < ApplicationController
+  # Anonymous by design: the promise is that you can get an answer without
+  # handing over an identity, and a login wall would break that promise before
+  # the page even loads.
+  allow_unauthenticated_access
+
   # GET rather than POST, and the parameters stay in the URL, so a result can be
   # bookmarked, shared into a family chat, or linked from a forum answer. Those
   # links are also the distribution channel, which a POST would throw away.

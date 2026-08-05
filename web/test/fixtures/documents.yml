@@ -1,0 +1,19 @@
+passport:
+  member: rajan
+  kind: passport
+  issuing_country: NP
+  applying_from: GB
+  expires_on: <%= 2.years.from_now.to_date.to_s %>
+
+bluebook:
+  member: mother
+  kind: vehicle_registration
+  issuing_country: NP
+  applying_from: GB
+  expires_on: <%= 100.days.from_now.to_date.to_s %>
+
+stranger_passport:
+  member: stranger
+  kind: passport
+  issuing_country: NP
+  expires_on: <%= 3.years.from_now.to_date.to_s %>

@@ -1,0 +1,39 @@
+<% content_for :title, "People" %>
+
+<h1>People</h1>
+
+<p class="lede">
+  Documents belong to people. A person here does not need an account of their own — which is the
+  point, because the paperwork you are most likely to forget belongs to somebody else.
+</p>
+
+<% if @members.any? %>
+  <div class="cards">
+    <% @members.each do |member| %>
+      <div class="card">
+        <h3><%= member.name %></h3>
+        <p class="note">
+          <%= member.relationship.presence || "No relationship set" %>
+          &middot; <%= pluralize(member.documents.size, "document") %>
+        </p>
+        <p>
+          <%= link_to "Edit", edit_member_path(member) %>
+          &middot;
+          <%= button_to "Remove", member_path(member), method: :delete, class: "btn btn-quiet",
+                form: { data: { turbo_confirm: "Remove #{member.name} and all of their documents?" } } %>
+        </p>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <p>Nobody added yet.</p>
+<% end %>
+
+<p style="margin-top:1.5rem">
+  <% if household.can_add_member? %>
+    <%= link_to "Add a person", new_member_path, class: "btn" %>
+  <% else %>
+    <span class="tag tag-warn">Plan limit reached</span>
+    <span class="note">Your plan covers <%= pluralize(household.member_limit, "person") %>.</span>
+  <% end %>
+</p>
