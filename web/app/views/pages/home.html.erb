@@ -10,11 +10,12 @@
 
 <section class="answer">
   <p class="eyebrow">Start here</p>
-  <p class="headline"><a href="<%= playbooks_path %>">Browse the renewal playbooks</a></p>
+  <p class="headline"><a href="<%= calculator_path %>">Work out when to start &rarr;</a></p>
   <p>
-    <%= pluralize(@playbook_count, "playbook") %> across <%= pluralize(@rules.size, "document") %>
-    and <%= pluralize(@country_count, "issuing country") %>, each computed from an open dataset of
-    renewal rules rather than guessed.
+    Tell it what you have and when it expires. No account, nothing stored.
+    Or <a href="<%= playbooks_path %>">browse <%= pluralize(@playbook_count, "playbook") %></a>
+    across <%= pluralize(@rules.size, "document") %> and
+    <%= pluralize(@country_count, "issuing country") %>.
   </p>
 </section>
 
