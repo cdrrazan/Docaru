@@ -5,6 +5,8 @@ Rails.application.routes.draw do
   # product feature and a page that ranks, so these URLs are readable and stable
   # — "from-gb" rather than a query string, because that is the part of the URL
   # that matches what somebody typed into a search box.
+  get "when-to-start", to: "calculations#show", as: :calculator
+
   get "playbooks", to: "playbooks#index", as: :playbooks
   get "playbooks/:country_code/:document_kind/from-:origin",
       to: "playbooks#show", as: :origin_playbook,

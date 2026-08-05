@@ -1,0 +1,146 @@
+<% content_for :title, "When should I start renewing?" %>
+<% content_for :description, "Enter a document and its expiry date and get the date you have to start renewing — computed from real renewal windows, processing times, and prerequisites." %>
+
+<h1>When should I start?</h1>
+
+<p class="lede">
+  Enter what you have and when it expires. You get the date you have to begin — worked back from
+  the renewal window, the processing time where you are applying from, and any supporting document
+  that has to be obtained first. No account, nothing stored.
+</p>
+
+<%= form_with url: calculator_path, method: :get, data: { turbo: false } do %>
+  <div class="field">
+    <label for="document">Document</label>
+    <select name="document" id="document">
+      <option value="">Choose a document…</option>
+      <% @documents.each do |label, value| %>
+        <option value="<%= value %>" <%= "selected" if value == "#{@calculation.country_code}:#{@calculation.document_kind}" %>>
+          <%= label %>
+        </option>
+      <% end %>
+    </select>
+  </div>
+
+  <% if @origins.any? %>
+    <div class="field">
+      <label for="from">Where are you applying from?</label>
+      <p class="hint">
+        This changes the answer substantially — applying through a mission abroad is slower than
+        applying at home, and each mission differs.
+      </p>
+      <select name="from" id="from">
+        <% @origins.each do |label, value| %>
+          <option value="<%= value %>" <%= "selected" if value == @calculation.applying_from %>><%= label %></option>
+        <% end %>
+      </select>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <label for="expires_on">Expiry date</label>
+    <p class="hint">As printed on the document.</p>
+    <input type="date" name="expires_on" id="expires_on" value="<%= @calculation.expires_on %>">
+  </div>
+
+  <button type="submit" class="btn">Work out my start date</button>
+<% end %>
+
+<% if @submitted && @calculation.errors.any? %>
+  <div class="errors">
+    <strong>Not quite enough to answer:</strong>
+    <ul>
+      <% @calculation.errors.each do |error| %>
+        <li><%= error.message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<% if @submitted && @calculation.ready? %>
+  <% status = @calculation.status %>
+  <% resolved = @calculation.resolved %>
+  <% timeline = @calculation.timeline %>
+
+  <section class="answer <%= "answer-warn" unless status == :ahead %>">
+    <p class="eyebrow"><%= resolved.rule.title %> &middot; <%= context_phrase(resolved.rule, resolved.context) %></p>
+    <p class="headline"><%= @calculation.headline %></p>
+    <p><%= @calculation.explanation %></p>
+  </section>
+
+  <%= render "shared/draft_banner", resolved: resolved %>
+
+  <section>
+    <h2>Your dates</h2>
+    <div class="scroll">
+      <table>
+        <tbody>
+          <tr>
+            <td>Earliest you may apply</td>
+            <td class="num"><%= @calculation.window_opens_on.strftime("%-d %b %Y") %></td>
+            <td class="note">The authority will not accept an application before this.</td>
+          </tr>
+          <tr class="total">
+            <td>Start by</td>
+            <td class="num"><%= @calculation.start_by.strftime("%-d %b %Y") %></td>
+            <td>Begin gathering documents on this date at the latest.</td>
+          </tr>
+          <tr>
+            <td>Expires</td>
+            <td class="num"><%= @calculation.expires_on.strftime("%-d %b %Y") %></td>
+            <td class="note">
+              <%= @calculation.days_until_expiry.negative? ?
+                    "#{@calculation.days_until_expiry.abs} days ago." :
+                    "In #{@calculation.days_until_expiry} days." %>
+            </td>
+          </tr>
+          <% unless timeline.feasible? %>
+            <tr>
+              <td>Realistic completion</td>
+              <td class="num"><%= @calculation.projected_completion.strftime("%-d %b %Y") %></td>
+              <td class="note">
+                Starting on the first legal day — about <%= timeline.shortfall_days %> days after it expires.
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>What to do</h2>
+    <ol>
+      <% if (slowest = resolved.slowest_prerequisite) %>
+        <li>
+          <strong>Start with this: <%= slowest["item"] %>.</strong>
+          It takes about <%= slowest["obtain_lead_days"] %> days to obtain on its own, and the
+          application cannot be submitted without it — which is why the start date is so much
+          earlier than the processing time alone would suggest.
+        </li>
+      <% end %>
+      <li>
+        <strong>Gather the rest of the paperwork.</strong>
+        <%= pluralize(resolved.required_documents.size, "item") %> in total — see the full list on
+        the playbook.
+      </li>
+      <% if resolved.appointment_required? %>
+        <li>
+          <strong>Book the appointment.</strong>
+          One is required, and at busy missions the wait for a slot can exceed the processing time.
+        </li>
+      <% end %>
+      <li>
+        <strong>Submit and wait.</strong>
+        Budget <%= timeline.processing_days %> days, not <%= timeline.typical_days %> —
+        the worst case is what you plan against.
+      </li>
+    </ol>
+
+    <p>
+      <a class="btn btn-quiet" href="<%= playbook_path_for(resolved.rule, resolved.context) %>">
+        Read the full playbook
+      </a>
+    </p>
+  </section>
+<% end %>
