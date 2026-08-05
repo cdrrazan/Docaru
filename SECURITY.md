@@ -50,7 +50,15 @@ true.
 
 ## Self-hosting
 
-Generate every secret in `.env.example` rather than choosing one, put the instance behind TLS, and
-back up `/rails/storage` — it holds both the databases and the encrypted attachments. An instance
-without working SMTP sends no reminders, which means it does not do the one thing it exists for;
-check that first.
+Generate every secret in `.env.example` rather than choosing one, and put the instance behind TLS.
+
+Back up both volumes: the MySQL data directory holds the deadlines, and `/rails/storage` holds the
+encrypted attachments. Neither is much use without the other, and the attachments are unreadable
+without the vault passphrase regardless — which is the point, and also means a backup of them alone
+protects nobody who has forgotten it.
+
+Do not expose the database port publicly. The compose file keeps MySQL on the internal network with
+no published port, which is deliberate.
+
+An instance without working SMTP sends no reminders, which means it does not do the one thing it
+exists for; check that first.

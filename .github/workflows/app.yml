@@ -16,8 +16,26 @@ defaults:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: renewaru
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
     steps:
       - uses: actions/checkout@v4
+
+      # mysql2 is a native extension and needs the client headers to build.
+      - name: Install MySQL client library
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libmysqlclient-dev
 
       - uses: ruby/setup-ruby@v1
         with:
@@ -27,12 +45,22 @@ jobs:
       - name: Run tests
         env:
           RAILS_ENV: test
+          # root, because the suite creates a database per parallel worker plus
+          # the separate cache, queue and cable databases — more than a scoped
+          # user is granted. Fine for a throwaway CI container.
+          DATABASE_USERNAME: root
+          DATABASE_PASSWORD: renewaru
+          DATABASE_HOST: 127.0.0.1
         run: bin/rails db:test:prepare test
 
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # mysql2 is a native extension; bundle install needs the client headers.
+      - name: Install MySQL client library
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libmysqlclient-dev
 
       - uses: ruby/setup-ruby@v1
         with:
@@ -46,6 +74,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # mysql2 is a native extension; bundle install needs the client headers.
+      - name: Install MySQL client library
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libmysqlclient-dev
 
       - uses: ruby/setup-ruby@v1
         with:
