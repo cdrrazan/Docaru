@@ -44,6 +44,11 @@ Rails.application.routes.draw do
   # Reading a passport's machine-readable zone instead of typing it.
   resources :scans, only: %i[new create]
 
+  # One row per browser per device. Keyed by the push endpoint rather than an id
+  # because that is what the browser knows about itself — it can revoke its own
+  # subscription without having been told a database id.
+  resource :push_subscription, only: %i[create destroy]
+
   # Installable, because the people this is for check a deadline on a phone
   # abroad rather than at a desk. The service worker caches the public playbooks
   # only — see the rule at the top of that file.

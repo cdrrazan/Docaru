@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_05_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_06_012906) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -83,6 +83,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_130000) do
     t.index ["household_id"], name: "index_members_on_household_id"
   end
 
+  create_table "push_subscriptions", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.string "auth_key", null: false
+    t.datetime "created_at", null: false
+    t.string "endpoint", limit: 512, null: false
+    t.datetime "expired_at"
+    t.string "p256dh_key", null: false
+    t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.bigint "user_id", null: false
+    t.index ["user_id", "endpoint"], name: "index_push_subscriptions_on_user_id_and_endpoint", unique: true, length: { endpoint: 191 }
+  end
+
   create_table "reminders", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "document_id", null: false
@@ -118,6 +130,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_130000) do
   add_foreign_key "attachments", "documents"
   add_foreign_key "documents", "members"
   add_foreign_key "members", "households"
+  add_foreign_key "push_subscriptions", "users"
   add_foreign_key "reminders", "documents"
   add_foreign_key "sessions", "users"
   add_foreign_key "users", "households"

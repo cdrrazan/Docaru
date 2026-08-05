@@ -55,6 +55,59 @@ self.addEventListener("activate", (event) => {
   )
 })
 
+// ---- push ------------------------------------------------------------------
+//
+// The deadline goes in the notification itself rather than behind a tap. This
+// is competing with everything else on a lock screen, and "you have an update"
+// costs the reader a tap to learn something the notification could have told
+// them.
+
+self.addEventListener("push", (event) => {
+  if (!event.data) return
+
+  let payload
+  try {
+    payload = event.data.json()
+  } catch {
+    return
+  }
+
+  const { title, options = {} } = payload
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: options.body,
+      data: options.data,
+      // Collapses a re-send for the same document rather than stacking two
+      // notifications saying the same thing.
+      tag: options.tag,
+      icon: "/icon.png",
+      badge: "/icon.png",
+      // These are dated obligations, not chat messages. Leaving them on screen
+      // until acknowledged is the point.
+      requireInteraction: true
+    })
+  )
+})
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close()
+  const path = event.notification.data?.path || "/dashboard"
+
+  // Focus the tab that is already open on that document rather than opening a
+  // fourth copy of the app.
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      for (const client of windows) {
+        if (new URL(client.url).pathname === path && "focus" in client) return client.focus()
+      }
+      return self.clients.openWindow ? self.clients.openWindow(path) : undefined
+    })
+  )
+})
+
+// ---- fetch -----------------------------------------------------------------
+
 self.addEventListener("fetch", (event) => {
   const { request } = event
   if (request.method !== "GET") return

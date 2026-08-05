@@ -2,6 +2,7 @@ class User < ApplicationRecord
   has_secure_password
   belongs_to :household
   has_many :sessions, dependent: :destroy
+  has_many :push_subscriptions, dependent: :destroy
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 

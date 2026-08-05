@@ -18,23 +18,9 @@ class ReminderMailer < ApplicationMailer
   # The subject line is most of the product. It has to say what to do, to whom,
   # and by when — because for a great many recipients the subject is the only
   # part that gets read.
-  def subject_line
-    who = @document.member.name
-    what = @document.title
-
-    case @urgency
-    when "heads_up"
-      "In a month: start renewing #{who}'s #{what}"
-    when "soon"
-      "Next week: start renewing #{who}'s #{what}"
-    when "act"
-      "Start renewing #{who}'s #{what} today"
-    when "overdue"
-      "Overdue: #{who}'s #{what} renewal should have started"
-    when "critical"
-      "Urgent: #{who}'s #{what} expires #{@document.expires_on.strftime("%-d %B")}"
-    else
-      "#{who}'s #{what}"
-    end
-  end
+  #
+  # Shared with the push notification, which is the same message arriving by
+  # another route. A household reading "start today" on a phone and "in a month"
+  # in an inbox would trust neither.
+  def subject_line = ReminderNotification.title(@document, @urgency)
 end
