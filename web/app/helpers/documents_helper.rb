@@ -19,9 +19,33 @@ module DocumentsHelper
     unknown: "tag tag-soft"
   }.freeze
 
+  REMINDER_LABELS = {
+    "start_in_30" => "A month before you need to start",
+    "start_in_7" => "A week before you need to start",
+    "start_now" => "The day to start",
+    "overdue_14" => "Two weeks late",
+    "overdue_45" => "Six weeks late",
+    "expiry_90" => "90 days before it expires",
+    "expiry_30" => "30 days before it expires",
+    "expiry_7" => "7 days before it expires"
+  }.freeze
+
   def status_tag(document)
     status = document.status
     tag.span(STATUS_LABELS.fetch(status), class: STATUS_CLASSES.fetch(status))
+  end
+
+  def reminder_label(entry) = REMINDER_LABELS.fetch(entry.kind, entry.kind.humanize)
+
+  def status_headline(document)
+    case document.status
+    when :expired then "Expired"
+    when :overdue then "You should have started already"
+    when :impossible then "Cannot be finished before it expires"
+    when :now then "Start now"
+    when :ahead then "Start on #{document.start_by.strftime("%-d %B %Y")}"
+    else "Expires #{document.expires_on.strftime("%-d %B %Y")}"
+    end
   end
 
   # One sentence a person can act on. Says the uncomfortable thing plainly —

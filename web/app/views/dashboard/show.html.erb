@@ -8,7 +8,11 @@
   </p>
 
   <p>
-    <%= link_to "Add a person", new_member_path, class: "btn" %>
+    <% if @members.any? %>
+      <%= link_to "Add a document", new_document_path, class: "btn" %>
+    <% else %>
+      <%= link_to "Add a person", new_member_path, class: "btn" %>
+    <% end %>
   </p>
 <% else %>
   <% next_up = @documents.first %>
@@ -41,7 +45,7 @@
         <tbody>
           <% @documents.each do |document| %>
             <tr>
-              <td><%= document.title %></td>
+              <td><%= link_to document.title, document_path(document) %></td>
               <td class="note"><%= document.member.name %></td>
               <td class="num"><%= document.start_by&.strftime("%-d %b %Y") || "—" %></td>
               <td><%= status_tag(document) %></td>
@@ -60,5 +64,10 @@
     <%= pluralize(@documents.size, "document") %> of
     <%= household.document_limit.infinite? ? "unlimited" : household.document_limit %>
   </p>
-  <p><%= link_to "Manage people", members_path %></p>
+  <p>
+    <%= link_to "Manage people", members_path %>
+    <% if household.can_add_document? %>
+      &middot; <%= link_to "Add a document", new_document_path %>
+    <% end %>
+  </p>
 </section>

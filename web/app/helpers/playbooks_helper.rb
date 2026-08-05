@@ -17,6 +17,25 @@ module PlaybooksHelper
     end
   end
 
+  # Absolute form, for emails. A relative path in an email goes nowhere.
+  def playbook_url_for(document_or_rule, context = nil)
+    rule, ctx = if document_or_rule.is_a?(Document)
+      [ document_or_rule.rule, document_or_rule.resolved&.context ]
+    else
+      [ document_or_rule, context ]
+    end
+    return dashboard_url unless rule
+
+    kind = rule.document_kind.tr("_", "-")
+    country = rule.country_code.downcase
+
+    if ctx.to_s == DOMESTIC || ctx.blank?
+      playbook_url(country_code: country, document_kind: kind)
+    else
+      origin_playbook_url(country_code: country, document_kind: kind, origin: ctx.downcase)
+    end
+  end
+
   # "in Nepal" / "from the United Kingdom" — the phrasing that reads naturally
   # in a heading and matches how the question gets asked.
   def context_phrase(rule, context)
