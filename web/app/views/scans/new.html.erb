@@ -1,0 +1,49 @@
+<% content_for :title, "Read a passport" %>
+
+<h1>Read a passport</h1>
+
+<p class="lede">
+  The two lines of letters and chevrons along the bottom of the photo page. Copy them in and we will
+  fill the form for you — including the expiry date, which is the part people most often mistype.
+</p>
+
+<% if @result && !@result.valid? %>
+  <div class="errors">
+    <strong>That did not read cleanly:</strong>
+    <ul>
+      <% @result.errors.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+    <p class="note">
+      Every field in that zone carries a check digit, so we can tell when a character has been
+      misread rather than storing a wrong date and reminding you on the wrong day.
+    </p>
+  </div>
+<% end %>
+
+<%= form_with url: scans_path, method: :post do |form| %>
+  <div class="field">
+    <%= form.label :mrz, "Machine-readable zone" %>
+    <p class="hint">
+      Two lines of 44 characters for a passport, three lines of 30 for an ID card. Include the
+      &lt; characters.
+    </p>
+    <%= form.text_area :mrz, rows: 4, value: params[:mrz], autofocus: true,
+          spellcheck: false, autocapitalize: "characters",
+          style: "font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.85rem;",
+          placeholder: "P<NPLBHATTARAI<<RAJAN<<<<<<<<<<<<<<<<<<<<<<<<\n12AB345676NPL9001152M3102201<<<<<<<<<<<<<<<4" %>
+  </div>
+
+  <%= form.submit "Read it", class: "btn" %>
+  <%= link_to "Type it in instead", new_document_path, class: "btn btn-quiet" %>
+<% end %>
+
+<section class="provenance">
+  <h2>What happens to it</h2>
+  <p>
+    The zone is parsed and discarded. It carries a name, a sex and a date of birth, none of which we
+    need to work out a renewal date, so none of them are stored — we keep the document kind, the
+    issuing country and the expiry date, and you can edit all three before saving.
+  </p>
+</section>

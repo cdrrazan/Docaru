@@ -30,5 +30,8 @@ Rails.application.routes.draw do
   # No index: the dashboard is the list, sorted by urgency rather than by name.
   resources :documents, except: :index
 
+  # Reading a passport's machine-readable zone instead of typing it.
+  resources :scans, only: %i[new create]
+
   get "up" => "rails/health#show", as: :rails_health_check
 end
