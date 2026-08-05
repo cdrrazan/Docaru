@@ -7,6 +7,7 @@ class Document < ApplicationRecord
   belongs_to :member
   has_one :household, through: :member
   has_many :reminders, dependent: :destroy
+  has_many :attachments, dependent: :destroy
 
   # Renewing means a new expiry date, which means a new cycle. Clearing the sent
   # log lets the whole cascade run again for the new date instead of being

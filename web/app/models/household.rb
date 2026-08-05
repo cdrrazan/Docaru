@@ -13,6 +13,8 @@ class Household < ApplicationRecord
   has_many :members, dependent: :destroy
   has_many :documents, through: :members
 
+  has_secure_token :vault_salt, length: 24
+
   validates :name, presence: true, length: { maximum: 120 }
   validates :plan, inclusion: { in: PLANS }
 
@@ -30,4 +32,12 @@ class Household < ApplicationRecord
   # already has, because the alternative is letting somebody lose their visa
   # over a billing state.
   def alerting? = true
+
+  # Generated lazily so existing households pick one up on first vault use.
+  # Not a secret: its job is to stop one precomputed attack from working
+  # against every household at once.
+  def vault_salt!
+    regenerate_vault_salt if vault_salt.blank?
+    vault_salt
+  end
 end

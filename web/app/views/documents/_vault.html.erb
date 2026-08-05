@@ -1,0 +1,71 @@
+<section
+  data-controller="vault"
+  data-vault-salt-value="<%= household.vault_salt! %>"
+  data-vault-document-id-value="<%= document.id %>"
+  data-vault-upload-url-value="<%= document_attachments_path(document) %>">
+
+  <h2>Scans</h2>
+
+  <p class="note">
+    Encrypted in your browser before they are uploaded. We store the ciphertext and never hold the
+    key, so we cannot open these — and neither can anyone who reaches our database.
+  </p>
+
+  <% document.attachments.ordered.each do |attachment| %>
+    <div
+      data-attachment-url="<%= document_attachment_path(document, attachment) %>"
+      data-attachment-iv="<%= attachment.iv %>"
+      data-attachment-content-type="<%= attachment.content_type %>"
+      hidden></div>
+  <% end %>
+
+  <div data-vault-target="locked">
+    <div class="banner">
+      <strong>Vault locked.</strong>
+      Enter your vault passphrase to add or view scans. It is not your account password, it is never
+      sent to us, and it unlocks only this tab.
+    </div>
+
+    <div class="field">
+      <label for="vault-passphrase">Vault passphrase</label>
+      <p class="hint">
+        At least 10 characters. <strong>If you lose it, these files are unrecoverable</strong> — there
+        is no reset, because a reset we could perform is a reset anyone who compels us could perform.
+      </p>
+      <input type="password" id="vault-passphrase" autocomplete="off"
+             data-vault-target="passphrase" data-action="keydown.enter->vault#unlock">
+    </div>
+
+    <button class="btn" data-action="vault#unlock">Unlock</button>
+  </div>
+
+  <div data-vault-target="unlocked" hidden>
+    <div class="field">
+      <label for="vault-files">Add pages</label>
+      <p class="hint">
+        Images are resized and converted before encryption — a phone photo of a passport does not
+        need to be twelve megabytes.
+      </p>
+      <input type="file" id="vault-files" multiple accept="image/*,application/pdf"
+             data-vault-target="input" data-action="vault#upload">
+    </div>
+
+    <div class="cards" data-vault-target="gallery"></div>
+
+    <p>
+      <% if document.attachments.none? %>
+        <span class="note">No pages yet.</span>
+      <% end %>
+      <button class="btn btn-quiet" data-action="vault#lock">Lock vault</button>
+    </p>
+  </div>
+
+  <p data-vault-target="status" class="note"></p>
+
+  <noscript>
+    <div class="banner banner-warn">
+      Scans need JavaScript, because the encryption happens in your browser. Everything else on this
+      page works without it.
+    </div>
+  </noscript>
+</section>
