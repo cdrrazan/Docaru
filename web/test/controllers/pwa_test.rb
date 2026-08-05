@@ -47,14 +47,17 @@ class PwaTest < ActionDispatch::IntegrationTest
   test "the service worker caches by allowlist, never the private plane" do
     get pwa_service_worker_path
 
-    worker = response.body
+    # Scoped to the allowlist itself rather than the whole file. Naming a
+    # private path elsewhere is fine — notificationclick opens /dashboard, which
+    # is the point of the notification — but caching one never is.
+    allowlist = response.body[/PUBLIC_PATHS\s*=\s*\[(.*?)\]/m, 1]
 
-    assert_match(/PUBLIC_PATHS/, worker)
-    assert_match(%r{/playbooks}, worker)
+    assert allowlist, "the service worker no longer declares a PUBLIC_PATHS allowlist"
+    assert_match(%r{/playbooks}, allowlist)
 
-    %w[dashboard documents members attachments scans session].each do |private_path|
-      assert_no_match(/["'\/]#{private_path}/, worker,
-                      "the service worker mentions #{private_path}, which must never be cached")
+    %w[dashboard documents members attachments scans session push].each do |private_path|
+      assert_no_match(/#{private_path}/, allowlist,
+                      "#{private_path} is in the cache allowlist and must never be")
     end
   end
 

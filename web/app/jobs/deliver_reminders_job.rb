@@ -47,6 +47,11 @@ class DeliverRemindersJob < ApplicationJob
         ).deadline.deliver_later
       end
 
+      # Additive, and after the mail. Push is the faster channel but the less
+      # reliable one — permission gets revoked, devices get replaced — so email
+      # is what the guarantee rests on and push is what makes it timely.
+      DeliverPushJob.perform_later(document, entry.kind, entry.urgency.to_s)
+
       reminder.update!(sent_at: Time.current)
     end
   rescue ActiveRecord::RecordNotUnique

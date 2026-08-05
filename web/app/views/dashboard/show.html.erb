@@ -76,6 +76,30 @@
   </section>
 <% end %>
 
+<% if PushSubscription.configured? %>
+  <section data-controller="push"
+           data-push-public-key-value="<%= ENV["VAPID_PUBLIC_KEY"] %>"
+           data-push-url-value="<%= push_subscription_path %>">
+    <h2>Notifications on this device</h2>
+    <p class="note">
+      Reminders always go to <%= current_user.email_address %>. Turning this on adds a notification
+      on this device, which is the difference between reading it today and reading it whenever you
+      next open your email.
+    </p>
+
+    <p>
+      <button type="button" class="btn" data-push-target="enable" data-action="push#enable" hidden>
+        Turn on notifications
+      </button>
+      <button type="button" class="btn btn-quiet" data-push-target="disable" data-action="push#disable" hidden>
+        Turn off on this device
+      </button>
+    </p>
+
+    <p class="note" data-push-target="status" role="status" aria-live="polite"></p>
+  </section>
+<% end %>
+
 <section>
   <h2>Household</h2>
   <p class="note">
