@@ -27,12 +27,13 @@ Everything so far. Nothing is released yet, and the dataset is entirely unverifi
 - Prerequisite chains: warns when one document's lapse will block another's renewal.
 - MRZ reader for passports and ID cards, with check-digit validation.
 - Vault: attachments encrypted in the browser; the server holds only ciphertext.
-- Single-container self-hosted image.
+- Self-hosted image via Docker Compose: the application plus a MySQL server.
 
 ### Known gaps
 
 - No renewal rule has been verified. Every playbook says so.
 - No payment processor; the upgrade button switches plans without charging.
 - The Docker image has never been built — this was developed without a Docker daemon available.
+  The application itself has been exercised against a real MySQL server; the image around it has not.
 - MRZ capture is paste-only; no camera yet.
 - Push notifications are not implemented. Email only.

@@ -59,22 +59,30 @@ playbook, so a consumer never has to reimplement the arithmetic.
 
 ## Running the application
 
+Needs MySQL 8.0+ or MariaDB 10.6+. Point it at a server with `DATABASE_HOST`, `DATABASE_USERNAME`
+and `DATABASE_PASSWORD`, or take the defaults (`renewaru`/`renewaru` on `127.0.0.1`) and create the
+user locally.
+
 ```sh
 cd web
 bin/setup
 bin/rails server
 ```
 
-Or self-host the whole thing as one container:
+Or self-host:
 
 ```sh
-cp .env.example .env && $EDITOR .env    # generate the four secrets
-docker compose up -d
+cp .env.example .env && $EDITOR .env    # generate the secrets
+docker compose up -d --build
 ```
 
-One container: web, background jobs, and SQLite. The reminder sweep runs inside the web process
-because that sweep is the product, and it must not be the thing an operator forgets to start.
-(Caveat: the image has not yet been built and tested — see [CHANGELOG.md](CHANGELOG.md).)
+Two containers: the application and MySQL. The application is still a single process — Solid Queue
+runs inside Puma, so the nightly reminder sweep is not a separate service anyone can forget to
+start. That sweep is the product.
+
+Back up **both** volumes. `renewaru-db` holds the deadlines; `renewaru-storage` holds the encrypted
+attachments. Neither is much use without the other.
+(Caveat: the image has not yet been built — see [CHANGELOG.md](CHANGELOG.md).)
 
 ## What the application does
 

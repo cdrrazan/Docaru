@@ -1,44 +1,85 @@
-# SQLite. Versions 3.8.0 and up are supported.
-#   gem install sqlite3
+# MySQL. Requires the mysql2 gem and MySQL 8.0+ or MariaDB 10.6+.
 #
-#   Ensure the SQLite 3 gem is defined in your Gemfile
-#   gem "sqlite3"
+# Four logical databases rather than one. The Solid Queue, Cache and Cable
+# tables are high-churn and operationally quite different from the application's
+# own data — the queue is written constantly and is disposable, while the
+# documents table is small, precious, and the thing actually worth backing up.
+# Keeping them apart means a queue backlog cannot bloat the backup that matters,
+# and the queue can be truncated without going anywhere near user data.
 #
+# Every setting is overridable by environment variable so a self-hosted instance
+# can point at a server it already runs.
+
 default: &default
-  adapter: sqlite3
-  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  timeout: 5000
+  adapter: mysql2
+  encoding: utf8mb4
+  collation: utf8mb4_unicode_ci
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: <%= ENV.fetch("DATABASE_USERNAME", "renewaru") %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD", "renewaru") %>
+  host: <%= ENV.fetch("DATABASE_HOST", "127.0.0.1") %>
+  port: <%= ENV.fetch("DATABASE_PORT", 3306) %>
+  # Fail fast rather than hanging a web request on an unreachable database.
+  connect_timeout: 5
+  # MySQL closes idle connections after eight hours by default, which otherwise
+  # surfaces as a mystifying "server has gone away" on the first request of the
+  # morning — precisely when the reminder sweep has just run.
+  reconnect: true
+  variables:
+    # Reject silent truncation and invalid dates rather than storing them. An
+    # expiry date quietly coerced to 0000-00-00 would produce a confidently
+    # wrong reminder, which is the one failure this product cannot afford.
+    sql_mode: "STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
 
 development:
-  <<: *default
-  database: storage/development.sqlite3
-
-# Warning: The database defined as "test" will be erased and
-# re-generated from your development database when you run "rake".
-# Do not set this db to the same as development or production.
-test:
-  <<: *default
-  database: storage/test.sqlite3
-
-# SQLite3 write its data on the local filesystem, as such it requires
-# persistent disks. If you are deploying to a managed service, you should
-# make sure it provides disk persistence, as many don't.
-#
-# Similarly, if you deploy your application as a Docker container, you must
-# ensure the database is located in a persisted volume.
-production:
   primary:
     <<: *default
-    # database: path/to/persistent/storage/production.sqlite3
+    database: <%= ENV.fetch("DATABASE_NAME", "renewaru_development") %>
   cache:
     <<: *default
-    # database: path/to/persistent/storage/production_cache.sqlite3
+    database: <%= ENV.fetch("DATABASE_NAME", "renewaru_development") %>_cache
     migrations_paths: db/cache_migrate
   queue:
     <<: *default
-    # database: path/to/persistent/storage/production_queue.sqlite3
+    database: <%= ENV.fetch("DATABASE_NAME", "renewaru_development") %>_queue
     migrations_paths: db/queue_migrate
   cable:
     <<: *default
-    # database: path/to/persistent/storage/production_cable.sqlite3
+    database: <%= ENV.fetch("DATABASE_NAME", "renewaru_development") %>_cable
+    migrations_paths: db/cable_migrate
+
+# Erased and rebuilt by the test task. Never point this at development.
+# TEST_ENV_NUMBER keeps parallel test workers off each other's databases.
+test:
+  primary:
+    <<: *default
+    database: renewaru_test<%= ENV["TEST_ENV_NUMBER"] %>
+  cache:
+    <<: *default
+    database: renewaru_test<%= ENV["TEST_ENV_NUMBER"] %>_cache
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *default
+    database: renewaru_test<%= ENV["TEST_ENV_NUMBER"] %>_queue
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *default
+    database: renewaru_test<%= ENV["TEST_ENV_NUMBER"] %>_cable
+    migrations_paths: db/cable_migrate
+
+production:
+  primary:
+    <<: *default
+    database: <%= ENV.fetch("DATABASE_NAME", "renewaru_production") %>
+  cache:
+    <<: *default
+    database: <%= ENV.fetch("DATABASE_NAME", "renewaru_production") %>_cache
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *default
+    database: <%= ENV.fetch("DATABASE_NAME", "renewaru_production") %>_queue
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *default
+    database: <%= ENV.fetch("DATABASE_NAME", "renewaru_production") %>_cable
     migrations_paths: db/cable_migrate
