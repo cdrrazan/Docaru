@@ -1,0 +1,62 @@
+name: App
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# The Rails app lives in web/ because rules/ is the public artefact and has to
+# stay at the top of the repository where a contributor correcting a renewal
+# date will actually find it.
+defaults:
+  run:
+    working-directory: web
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: web
+
+      - name: Run tests
+        env:
+          RAILS_ENV: test
+        run: bin/rails db:test:prepare test
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: web
+
+      - name: Lint
+        run: bin/rubocop -f github
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: web
+
+      - name: Static analysis
+        run: bin/brakeman --no-pager
+
+      - name: Audit gems
+        run: bin/bundler-audit
+
+      - name: Audit JavaScript pins
+        run: bin/importmap audit
