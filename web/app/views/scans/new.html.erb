@@ -3,8 +3,9 @@
 <h1>Read a passport</h1>
 
 <p class="lede">
-  The two lines of letters and chevrons along the bottom of the photo page. Copy them in and we will
-  fill the form for you — including the expiry date, which is the part people most often mistype.
+  The two lines of letters and chevrons along the bottom of the photo page. Point a camera at them or
+  copy them in, and we will fill the form for you — including the expiry date, which is the part
+  people most often mistype.
 </p>
 
 <% if @result && !@result.valid? %>
@@ -22,22 +23,55 @@
   </div>
 <% end %>
 
-<%= form_with url: scans_path, method: :post do |form| %>
-  <div class="field">
-    <%= form.label :mrz, "Machine-readable zone" %>
-    <p class="hint">
-      Two lines of 44 characters for a passport, three lines of 30 for an ID card. Include the
-      &lt; characters.
+<%# The camera and the box it fills have to sit inside one controller element, %>
+<%# so the form is wrapped too rather than living beside it. %>
+<div data-controller="mrz">
+  <section>
+    <h2>Point a camera at it</h2>
+    <p class="note">
+      Nothing is uploaded. The frame is read in your browser and dropped — only the characters you
+      submit ever reach us.
     </p>
-    <%= form.text_area :mrz, rows: 4, value: params[:mrz], autofocus: true,
-          spellcheck: false, autocapitalize: "characters",
-          style: "font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.85rem;",
-          placeholder: "P<NPLBHATTARAI<<RAJAN<<<<<<<<<<<<<<<<<<<<<<<<\n12AB345676NPL9001152M3102201<<<<<<<<<<<<<<<4" %>
-  </div>
 
-  <%= form.submit "Read it", class: "btn" %>
-  <%= link_to "Type it in instead", new_document_path, class: "btn btn-quiet" %>
-<% end %>
+    <div class="capture">
+      <video data-mrz-target="video" playsinline muted hidden aria-label="Camera preview"></video>
+      <img data-mrz-target="still" hidden alt="The captured zone, magnified for copying">
+      <canvas data-mrz-target="canvas" hidden></canvas>
+    </div>
+
+    <p>
+      <button type="button" class="btn btn-quiet" data-mrz-target="start" data-action="mrz#start">
+        Use the camera
+      </button>
+      <button type="button" class="btn" data-mrz-target="capture" data-action="mrz#capture" hidden>
+        Capture
+      </button>
+    </p>
+
+    <p class="note" data-mrz-target="status" role="status" aria-live="polite"></p>
+
+    <noscript>
+      <p class="note">The camera needs JavaScript. Typing the lines in below works without it.</p>
+    </noscript>
+  </section>
+
+  <%= form_with url: scans_path, method: :post do |form| %>
+    <div class="field">
+      <%= form.label :mrz, "Machine-readable zone" %>
+      <p class="hint">
+        Two lines of 44 characters for a passport, three lines of 30 for an ID card. Include the
+        &lt; characters.
+      </p>
+      <%= form.text_area :mrz, rows: 4, value: params[:mrz], autofocus: true,
+            spellcheck: false, autocapitalize: "characters", class: "mono",
+            data: { mrz_target: "input" },
+            placeholder: "P<NPLBHATTARAI<<RAJAN<<<<<<<<<<<<<<<<<<<<<<<<\n12AB345676NPL9001152M3102201<<<<<<<<<<<<<<<4" %>
+    </div>
+
+    <%= form.submit "Read it", class: "btn" %>
+    <%= link_to "Type it in instead", new_document_path, class: "btn btn-quiet" %>
+  <% end %>
+</div>
 
 <section class="provenance">
   <h2>What happens to it</h2>

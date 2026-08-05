@@ -17,12 +17,28 @@ class MachineReadableZone
   WEIGHTS = [ 7, 3, 1 ].freeze
   FILLER = "<"
 
+  # What a camera mistakes for what, in the fields where only digits are legal.
+  # Reading these off a photo is where the errors come from, and the fields they
+  # land in — the dates — are the ones the whole product is built on.
+  CONFUSIONS = { "O" => "0", "Q" => "0", "D" => "0", "U" => "0",
+                 "I" => "1", "L" => "1", "Z" => "2", "A" => "4",
+                 "S" => "5", "G" => "6", "T" => "7", "B" => "8" }.freeze
+
+  # Only the runs that are numeric by the standard, so a document number that
+  # genuinely contains letters is never touched. Both formats, zero-indexed as
+  # [line, offset, length].
+  NUMERIC_FIELDS = {
+    "TD3" => [ [ 1, 9, 1 ], [ 1, 13, 7 ], [ 1, 21, 7 ], [ 1, 43, 1 ] ],
+    "TD1" => [ [ 0, 14, 1 ], [ 1, 0, 7 ], [ 1, 8, 7 ], [ 1, 29, 1 ] ]
+  }.freeze
+
   Result = Struct.new(
     :format, :document_code, :issuing_country, :surname, :given_names, :number,
-    :nationality, :date_of_birth, :sex, :expires_on, :errors,
+    :nationality, :date_of_birth, :sex, :expires_on, :errors, :repaired,
     keyword_init: true
   ) do
     def valid? = errors.empty?
+    def repaired? = repaired.present?
     def full_name = [ given_names, surname ].compact_blank.join(" ")
     def passport? = document_code.to_s.start_with?("P")
 
@@ -36,12 +52,29 @@ class MachineReadableZone
     def parse(input)
       lines = normalise(input)
 
-      case lines.map(&:length)
-      in [ 44, 44 ] then parse_td3(lines)
-      in [ 30, 30, 30 ] then parse_td1(lines)
-      else
-        Result.new(errors: [ shape_error(lines) ])
-      end
+      result = parse_lines(lines)
+      return result if result.valid? || result.format.nil?
+
+      # A camera reads O for 0 and I for 1, and it does it in the date fields,
+      # because that is where digits are. Rather than rejecting the whole read,
+      # try the one obvious correction and let the check digits rule on it: a
+      # repair that does not satisfy them is discarded, so this can turn a
+      # failed read into a good one but cannot turn a bad read into a confident
+      # wrong date.
+      #
+      # Deliberately a single deterministic candidate, not a search. Trying
+      # combinations until one satisfies a one-digit checksum would find a
+      # passing answer roughly one time in ten whether or not it was true.
+      repaired = repair_numeric_fields(lines, result.format)
+      return result if repaired == lines
+
+      second = parse_lines(repaired)
+      return result unless second.valid?
+
+      # Surfaced rather than silently applied. The reader is looking at the
+      # photo; they can confirm a date faster than we can be certain of it.
+      second.repaired = changed_positions(lines, repaired)
+      second
     end
 
     # Fixed-width and uppercase. Cameras and copy-paste both introduce stray
@@ -79,6 +112,46 @@ class MachineReadableZone
     end
 
     private
+
+    def parse_lines(lines)
+      case lines.map(&:length)
+      in [ 44, 44 ] then parse_td3(lines)
+      in [ 30, 30, 30 ] then parse_td1(lines)
+      else
+        Result.new(errors: [ shape_error(lines) ])
+      end
+    end
+
+    # Digit-shaped letters become digits, but only inside the runs the standard
+    # says are numeric. Everything else — names, the document number, the
+    # issuing country — is left exactly as read.
+    def repair_numeric_fields(lines, format)
+      fields = NUMERIC_FIELDS[format]
+      return lines unless fields
+
+      repaired = lines.dup
+
+      fields.each do |line_index, offset, length|
+        line = repaired[line_index]
+        next unless line
+
+        run = line[offset, length]
+        next unless run
+
+        fixed = run.gsub(/[A-Z]/) { |char| CONFUSIONS.fetch(char, char) }
+        repaired[line_index] = line.dup.tap { |l| l[offset, length] = fixed }
+      end
+
+      repaired
+    end
+
+    def changed_positions(before, after)
+      before.each_with_index.flat_map do |line, index|
+        line.chars.each_with_index.filter_map do |char, position|
+          "#{char}→#{after[index][position]}" if char != after[index][position]
+        end
+      end
+    end
 
     def shape_error(lines)
       if lines.empty?
