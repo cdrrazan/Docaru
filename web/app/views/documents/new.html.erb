@@ -6,4 +6,12 @@
   Tell us what it is and when it expires. We work out when you have to start.
 </p>
 
+<% if @document.expires_on.blank? %>
+  <p><%= link_to "Read it from a passport instead", new_scan_path, class: "btn btn-quiet" %></p>
+<% else %>
+  <div class="banner banner-ok">
+    Filled in from the machine-readable zone. Check it against the document before saving.
+  </div>
+<% end %>
+
 <%= render "form", document: @document %>

@@ -11,7 +11,9 @@ class DocumentsController < ApplicationController
   end
 
   def new
-    @document = household.documents.new(member_id: params[:member_id], issuing_country: default_country)
+    # Prefilled from a scan when the user came via the MRZ reader.
+    @document = household.documents.new(prefill.merge(member_id: params[:member_id]))
+    @document.issuing_country ||= default_country
   end
 
   def create
@@ -54,6 +56,14 @@ class DocumentsController < ApplicationController
   def build_document
     member = household.members.find_by(id: document_params[:member_id])
     Document.new(document_params.merge(member: member))
+  end
+
+  # Only the three fields a scan can legitimately supply, so a crafted link
+  # cannot prefill anything else.
+  def prefill
+    return {} unless params[:document]
+
+    params.expect(document: [ :kind, :issuing_country, :expires_on ]).to_h.compact_blank
   end
 
   def document_params
