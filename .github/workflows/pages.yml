@@ -1,8 +1,20 @@
 name: Publish playbooks
 
+# Manual until GitHub Pages is turned on for this repository
+# (Settings > Pages > Source: GitHub Actions). Note that Pages on a private
+# repository needs a paid plan; making the repo public is the other route, and
+# is the one the spec's open-dataset positioning points at anyway.
+#
+# Once Pages is enabled, add the push trigger back so every merge republishes:
+#
+#   push:
+#     branches: [main]
+#
+# It is left off deliberately rather than left failing: a workflow that is red
+# on every push teaches people to ignore red builds, and the staleness and
+# feasibility checks in this repo are only worth having if a red build still
+# means something.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
