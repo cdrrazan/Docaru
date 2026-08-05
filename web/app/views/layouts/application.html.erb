@@ -31,6 +31,12 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <%= tag.link rel: "manifest", href: pwa_manifest_path %>
+    <%# Matches --accent and --bg, so the browser chrome does not sit against %>
+    <%# the page in the wrong colour once installed. %>
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#1c5d4a">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14140f">
+
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>

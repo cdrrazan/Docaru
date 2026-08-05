@@ -44,5 +44,15 @@ Rails.application.routes.draw do
   # Reading a passport's machine-readable zone instead of typing it.
   resources :scans, only: %i[new create]
 
+  # Installable, because the people this is for check a deadline on a phone
+  # abroad rather than at a desk. The service worker caches the public playbooks
+  # only — see the rule at the top of that file.
+  #
+  # The formats are pinned because the templates are manifest.json.erb and
+  # service-worker.js, while a request for an extensionless path is html —
+  # Rails' own commented-out suggestion raises MissingTemplate as written.
+  get "manifest", to: "rails/pwa#manifest", as: :pwa_manifest, defaults: { format: "json" }
+  get "service-worker", to: "rails/pwa#service_worker", as: :pwa_service_worker, defaults: { format: "js" }
+
   get "up" => "rails/health#show", as: :rails_health_check
 end

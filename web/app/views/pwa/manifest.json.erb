@@ -1,6 +1,20 @@
 {
-  "name": "Web",
+  "name": "Renewal playbooks",
+  "short_name": "Renewals",
+  "description": "Every document you own has a deadline. This tells you which one is next, and the date you have to start.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "lang": "en",
+  "theme_color": "#1c5d4a",
+  "background_color": "#fbfbf9",
   "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
     {
       "src": "/icon.png",
       "type": "image/png",
@@ -13,10 +27,18 @@
       "purpose": "maskable"
     }
   ],
-  "start_url": "/",
-  "display": "standalone",
-  "scope": "/",
-  "description": "Web.",
-  "theme_color": "red",
-  "background_color": "red"
+  "shortcuts": [
+    {
+      "name": "When should I start?",
+      "short_name": "When to start",
+      "description": "Work out the date to begin a renewal, without signing in",
+      "url": "/when-to-start"
+    },
+    {
+      "name": "Add a document",
+      "short_name": "Add",
+      "description": "Track a new deadline",
+      "url": "/documents/new"
+    }
+  ]
 }
