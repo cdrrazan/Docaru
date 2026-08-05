@@ -1,0 +1,26 @@
+<%= form_with model: member do |form| %>
+  <% if member.errors.any? %>
+    <div class="errors">
+      <strong>That did not work:</strong>
+      <ul>
+        <% member.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :name %>
+    <%= form.text_field :name, required: true, autofocus: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :relationship, "Relationship (optional)" %>
+    <p class="hint">How you refer to them — "Mother", "Daughter", "Me".</p>
+    <%= form.text_field :relationship %>
+  </div>
+
+  <%= form.submit class: "btn" %>
+  <%= link_to "Cancel", members_path, class: "btn btn-quiet" %>
+<% end %>

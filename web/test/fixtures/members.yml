@@ -1,0 +1,13 @@
+rajan:
+  household: one
+  name: Rajan
+  relationship: Me
+
+mother:
+  household: one
+  name: Aama
+  relationship: Mother
+
+stranger:
+  household: two
+  name: Not Your Business

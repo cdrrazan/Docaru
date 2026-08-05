@@ -1,0 +1,64 @@
+<% content_for :title, "Your deadlines" %>
+
+<h1>Your deadlines</h1>
+
+<% if @documents.empty? %>
+  <p class="lede">
+    Nothing tracked yet. Add a person, then add what they hold — we work out the rest.
+  </p>
+
+  <p>
+    <%= link_to "Add a person", new_member_path, class: "btn" %>
+  </p>
+<% else %>
+  <% next_up = @documents.first %>
+
+  <section class="answer <%= "answer-warn" unless next_up.status == :ahead %>">
+    <p class="eyebrow">Next up</p>
+    <p class="headline"><%= next_up.title %></p>
+    <p><%= document_verdict(next_up) %></p>
+    <p class="note"><%= next_up.member.name %></p>
+  </section>
+
+  <% if @needs_attention.size > 1 %>
+    <p class="note">
+      <%= pluralize(@needs_attention.size, "document") %> need attention.
+    </p>
+  <% end %>
+
+  <section>
+    <h2>Everything you are tracking</h2>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Document</th>
+            <th>Person</th>
+            <th class="num">Start by</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @documents.each do |document| %>
+            <tr>
+              <td><%= document.title %></td>
+              <td class="note"><%= document.member.name %></td>
+              <td class="num"><%= document.start_by&.strftime("%-d %b %Y") || "—" %></td>
+              <td><%= status_tag(document) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+<% end %>
+
+<section>
+  <h2>Household</h2>
+  <p class="note">
+    <%= household.name %> &middot; <%= pluralize(@members.size, "person") %> &middot;
+    <%= pluralize(@documents.size, "document") %> of
+    <%= household.document_limit.infinite? ? "unlimited" : household.document_limit %>
+  </p>
+  <p><%= link_to "Manage people", members_path %></p>
+</section>

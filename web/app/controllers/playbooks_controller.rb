@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class PlaybooksController < ApplicationController
+  # Public. These pages are the acquisition channel; a login wall in front of
+  # them would make the entire content strategy pointless.
+  allow_unauthenticated_access
+
   def index
     @rules = RuleCatalog.rules.sort_by { |rule| [ rule.country_code, rule.title ] }
     @playbook_count = RuleCatalog.playbooks.size

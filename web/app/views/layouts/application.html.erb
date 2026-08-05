@@ -26,6 +26,13 @@
         <nav>
           <a href="<%= calculator_path %>">When to start</a>
           <a href="<%= playbooks_path %>">Playbooks</a>
+          <% if authenticated? %>
+            <a href="<%= dashboard_path %>">Deadlines</a>
+            <%= button_to "Sign out", session_path, method: :delete, class: "btn btn-quiet",
+                  form: { style: "display:inline" } %>
+          <% else %>
+            <a href="<%= new_session_path %>">Sign in</a>
+          <% end %>
         </nav>
       </div>
     </header>
