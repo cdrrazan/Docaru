@@ -4,3 +4,6 @@
 
 .DS_Store
 *.swp
+
+# Self-hosting secrets.
+.env

@@ -1,0 +1,75 @@
+<% content_for :title, "Pricing" %>
+<% content_for :description, "Free for one person and twenty documents. Alerts and renewal playbooks are never paywalled." %>
+
+<h1>Pricing</h1>
+
+<p class="lede">
+  Storage is what costs us money, so storage is what the plans limit.
+  <strong>Alerts and playbooks are never paywalled</strong> — putting the safety feature behind a
+  card form would poison the trust the whole thing rests on.
+</p>
+
+<div class="cards">
+  <div class="card">
+    <h3>Free</h3>
+    <p class="headline">£0</p>
+    <ul class="plain">
+      <li>1 person</li>
+      <li>20 documents</li>
+      <li>Every alert</li>
+      <li>Every renewal playbook</li>
+      <li>Encrypted scans</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Household</h3>
+    <p class="headline">~£4<span class="note">/month</span></p>
+    <ul class="plain">
+      <li>Up to 6 people</li>
+      <li>Unlimited documents</li>
+      <li>Shared alerts across the household</li>
+      <li>Priority notification channels</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Self-hosted</h3>
+    <p class="headline">£0</p>
+    <ul class="plain">
+      <li>Everything, on your own machine</li>
+      <li>One container</li>
+      <li>Your data never touches us</li>
+    </ul>
+    <p class="note"><a href="https://github.com/cdrrazan/Renewaru">Run it yourself</a></p>
+  </div>
+</div>
+
+<section>
+  <h2>What happens if you stop paying</h2>
+  <p>
+    You keep every reminder for every document you already have. You lose the ability to add more
+    people and more documents until you are back under the free limits. Nobody misses a visa
+    deadline over a failed card payment — that would be the product failing at the only job it has.
+  </p>
+</section>
+
+<% if authenticated? %>
+  <section>
+    <h2>Your plan</h2>
+    <p>
+      <%= @household.name %> is on the <strong><%= @household.plan.humanize.downcase %></strong> plan,
+      using <%= pluralize(@household.documents.count, "document") %> and
+      <%= pluralize(@household.members.count, "person") %>.
+    </p>
+
+    <% if @household.plan == "free" %>
+      <div class="banner">
+        Billing is not wired up yet — there is no payment processor behind this button. It switches
+        the plan so the limits can be exercised, and it is here rather than hidden because a fake
+        checkout would be worse than an honest one.
+      </div>
+      <%= button_to "Switch to the household plan", plan_path, method: :patch, class: "btn" %>
+    <% end %>
+  </section>
+<% end %>
