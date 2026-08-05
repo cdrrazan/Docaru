@@ -1,0 +1,52 @@
+<% content_for :title, "Every document you own has a deadline" %>
+
+<h1>Every document you own has a deadline.<br>We tell you which one is next.</h1>
+
+<p class="lede">
+  A calendar reminder says "passport expires 14 March". It does not say "start in November, because
+  renewing from abroad takes ten weeks and needs a police certificate you have not ordered yet."
+  The failure is not memory. It is lead time.
+</p>
+
+<section class="answer">
+  <p class="eyebrow">Start here</p>
+  <p class="headline"><a href="<%= playbooks_path %>">Browse the renewal playbooks</a></p>
+  <p>
+    <%= pluralize(@playbook_count, "playbook") %> across <%= pluralize(@rules.size, "document") %>
+    and <%= pluralize(@country_count, "issuing country") %>, each computed from an open dataset of
+    renewal rules rather than guessed.
+  </p>
+</section>
+
+<h2>Why this is different</h2>
+
+<div class="cards">
+  <div class="card">
+    <h3>It knows the process, not just the date</h3>
+    <p class="note">
+      Renewal windows, processing times, and the prerequisites that have to be obtained first —
+      so the answer is a date to start, not a date to panic.
+    </p>
+  </div>
+  <div class="card">
+    <h3>It handles more than one country at once</h3>
+    <p class="note">
+      Renewing from Doha is not renewing from London: different queue, different mission, different
+      paperwork. Every playbook is written per origin.
+    </p>
+  </div>
+  <div class="card">
+    <h3>It admits what it does not know</h3>
+    <p class="note">
+      Every figure carries a last-verified date and a link to the authority. Unverified rules say so
+      on the page, loudly.
+    </p>
+  </div>
+  <div class="card">
+    <h3>It is open</h3>
+    <p class="note">
+      The rules are a public dataset. Anyone can correct one, and nobody has to trust us about a
+      number they can check themselves.
+    </p>
+  </div>
+</div>

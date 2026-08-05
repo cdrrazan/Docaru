@@ -1,0 +1,41 @@
+<% content_for :title, "Renewal playbooks" %>
+<% content_for :description, "Open, community-maintained renewal rules: how long each document takes to renew, from where, what it costs, and the date you have to start by." %>
+
+<h1>Renewal playbooks</h1>
+
+<p class="lede">
+  <%= pluralize(@playbook_count, "playbook") %> across <%= pluralize(@rules.size, "document") %>.
+  Each answers the question a calendar reminder cannot: when do you have to start?
+</p>
+
+<% @rules.group_by(&:country_code).sort.each do |country_code, rules| %>
+  <h2><%= country_title(country_code) %></h2>
+
+  <div class="cards">
+    <% rules.each do |rule| %>
+      <div class="card">
+        <h3>
+          <a href="<%= playbook_path_for(rule, Renewaru::Rule::Context::DOMESTIC) %>"><%= rule.title %></a>
+        </h3>
+        <p class="note">
+          <%= rule.status == "draft" ? "Unverified" : "Verified" %>
+          &middot;
+          <%= pluralize(RuleCatalog.origins_for(rule).size, "route") %>
+        </p>
+        <ul class="plain">
+          <% RuleCatalog.origins_for(rule).each do |context| %>
+            <% timeline = rule.resolve(context).timeline %>
+            <li>
+              <a href="<%= playbook_path_for(rule, context) %>"><%= context_label(rule, context) %></a>
+              <% if timeline.feasible? %>
+                <span class="note">— start <%= timeline.start_days_before_expiry %> days ahead</span>
+              <% else %>
+                <span class="tag tag-warn">window too short</span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+<% end %>

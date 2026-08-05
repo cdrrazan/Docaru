@@ -1,0 +1,164 @@
+<% page_title = "#{@rule.title} renewal #{context_phrase(@rule, @resolved.context)}" %>
+<% content_for :title, page_title %>
+<% content_for :description do %>
+  <%= @timeline.feasible? ?
+        "How long #{@rule.title} renewal takes #{context_phrase(@rule, @resolved.context)}, what it costs, what you need, and the date you have to start by: #{@timeline.start_days_before_expiry} days before expiry." :
+        "How long #{@rule.title} renewal takes #{context_phrase(@rule, @resolved.context)}, and why it cannot be completed before expiry." %>
+<% end %>
+
+<h1><%= page_title %></h1>
+
+<p class="lede">
+  A calendar reminder tells you the date it expires. This tells you the date you have to start,
+  which is a different and much earlier date.
+</p>
+
+<% if @other_contexts.any? %>
+  <div class="contexts">
+    <span class="tag tag-soft">Applying from</span>
+    <a class="current" href="<%= playbook_path_for(@rule, @resolved.context) %>">
+      <%= context_label(@rule, @resolved.context) %>
+    </a>
+    <% @other_contexts.each do |context| %>
+      <a href="<%= playbook_path_for(@rule, context) %>"><%= context_label(@rule, context) %></a>
+    <% end %>
+  </div>
+<% end %>
+
+<%= render "shared/draft_banner", resolved: @resolved %>
+
+<section class="answer <%= "answer-warn" unless @timeline.feasible? %>">
+  <p class="eyebrow">When to start</p>
+  <p class="headline">
+    <%= @timeline.feasible? ?
+          "Start #{@timeline.start_days_before_expiry} days before it expires" :
+          "You cannot finish this before it expires" %>
+  </p>
+  <p><%= @timeline.verdict %></p>
+</section>
+
+<section>
+  <h2>How that date is worked out</h2>
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr><th>Component</th><th class="num">Days</th><th>Why</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Processing, typical</td>
+          <td class="num"><%= @timeline.typical_days %></td>
+          <td class="note">What most applicants experience.</td>
+        </tr>
+        <tr>
+          <td>Processing, worst case</td>
+          <td class="num"><%= @timeline.processing_days %></td>
+          <td class="note">
+            What the plan is built on. A date derived from the median is correct for the median
+            applicant and useless for everyone in the tail.
+          </td>
+        </tr>
+        <% if (slowest = @resolved.slowest_prerequisite) %>
+          <tr>
+            <td>Slowest prerequisite</td>
+            <td class="num"><%= slowest["obtain_lead_days"] %></td>
+            <td class="note">
+              <%= slowest["item"] %> — obtained before you can apply, so it sits in front of the
+              process rather than inside it.
+            </td>
+          </tr>
+        <% end %>
+        <tr>
+          <td>Safety buffer</td>
+          <td class="num"><%= @timeline.buffer_days %></td>
+          <td class="note">Margin for the steps nobody controls.</td>
+        </tr>
+        <tr class="total">
+          <td>Total lead time</td>
+          <td class="num"><%= @timeline.required_lead_days %></td>
+          <td>Sum of the above. This is the number that matters.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>The renewal window</h2>
+  <p>
+    <%= @timeline.window_opens_phrase %>
+    <%= @timeline.window_closes_phrase %>
+  </p>
+
+  <% unless @timeline.feasible? %>
+    <div class="banner banner-warn">
+      <strong>The window is shorter than the process.</strong>
+      Even starting on the first day you are legally allowed to apply, this takes about
+      <%= @timeline.shortfall_days %> days longer than the time remaining. That is a property of the
+      process, not a mistake in your planning.
+      <%= @timeline.covered_by_grace? ?
+            "Late renewal is permitted here, so the realistic goal is to minimise the gap and budget for the penalty rather than to finish on time." :
+            "There is no grace period, so expect a stretch with no valid document and plan around it." %>
+    </div>
+  <% end %>
+</section>
+
+<% if (cost = money(@resolved.cost)) || @resolved.cost&.dig("note") %>
+  <section>
+    <h2>Cost</h2>
+    <% if cost %>
+      <p class="headline"><%= cost %></p>
+    <% else %>
+      <p>Not a flat fee.</p>
+    <% end %>
+    <% if @resolved.cost["expedited_amount"] %>
+      <p>Fast-track: <%= money("amount" => @resolved.cost["expedited_amount"], "currency" => @resolved.cost["currency"]) %></p>
+    <% end %>
+    <% if @resolved.cost["note"] %>
+      <p class="note"><%= @resolved.cost["note"] %></p>
+    <% end %>
+  </section>
+<% end %>
+
+<section>
+  <h2>What you need</h2>
+  <% practical = [] %>
+  <% practical << "You must attend in person." if @rule.data["in_person_required"] %>
+  <% practical << "An appointment must be booked in advance." if @resolved.appointment_required? %>
+  <% if practical.any? %>
+    <p><%= practical.join(" ") %></p>
+  <% end %>
+
+  <ul class="docs">
+    <% @resolved.required_documents.each do |doc| %>
+      <li>
+        <strong><%= doc["item"] %></strong>
+        <% if doc["obtain_lead_days"].to_i.positive? %>
+          <span class="tag">allow <%= doc["obtain_lead_days"] %> days to obtain</span>
+        <% end %>
+        <% if doc["optional"] %>
+          <span class="tag tag-soft">only in some cases</span>
+        <% end %>
+        <% if doc["detail"] %>
+          <div class="note"><%= doc["detail"] %></div>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</section>
+
+<section>
+  <h2>If you miss it</h2>
+  <p><%= @rule.data["lapse_consequence"] %></p>
+</section>
+
+<% if @resolved.notes.any? %>
+  <section>
+    <h2>Worth knowing</h2>
+    <% @resolved.notes.each do |note| %>
+      <p><%= note %></p>
+    <% end %>
+  </section>
+<% end %>
+
+<%= render "shared/provenance", resolved: @resolved %>

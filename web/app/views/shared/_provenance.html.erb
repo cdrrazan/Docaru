@@ -1,0 +1,24 @@
+<section class="provenance">
+  <h2>Where this came from</h2>
+
+  <p>
+    <% if resolved.draft? %>
+      <strong>Unverified.</strong> No human has checked this against the authority yet.
+    <% else %>
+      Last verified <%= resolved.verified_on %> by <%= resolved.verified_by %>.
+    <% end %>
+  </p>
+
+  <p>
+    This is community-maintained reference information, not legal advice, and government processes
+    change without notice. Always confirm against
+    <a href="<%= resolved.authority_url %>" rel="nofollow noopener">the issuing authority</a>
+    before acting on it.
+  </p>
+
+  <ul>
+    <% resolved.source_urls.each do |url| %>
+      <li><a href="<%= url %>" rel="nofollow noopener"><%= url %></a></li>
+    <% end %>
+  </ul>
+</section>

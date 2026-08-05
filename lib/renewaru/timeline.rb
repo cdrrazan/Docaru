@@ -84,6 +84,41 @@ module Renewaru
       m <= 1 ? "a month" : "#{m} months"
     end
 
+    # ---- window phrasing -----------------------------------------------------
+    #
+    # Kept here rather than in a view so the web app and the static generator
+    # cannot describe the same rule differently.
+
+    def window_opens_phrase
+      opens = window_opens_days_before
+      return "You may apply at any time." if opens >= 3650
+
+      "The earliest you may apply is #{opens} days before expiry."
+    end
+
+    def window_closes_phrase
+      closes = resolved.window_closes_days_before.to_i
+      grace = resolved.grace_days
+
+      if closes.positive?
+        "Applications close #{closes} days before expiry."
+      elsif closes.zero?
+        "Applications close on the expiry date itself; there is no grace period afterwards."
+      elsif grace >= 3650
+        # The large negative value is a sentinel for "there is no deadline on
+        # renewing an expired one". Rendering it as a day count invites the
+        # reader to plan against a number that means nothing.
+        "An expired document can still be renewed rather than applied for from scratch, " \
+          "so there is no cut-off — but the consequences of the gap still apply."
+      elsif grace >= 365
+        years = (grace / 365.0).round
+        "Late applications are still accepted for up to #{years} year#{"s" unless years == 1} " \
+          "after expiry, though penalties may apply."
+      else
+        "Late applications are still accepted for #{grace} days after expiry, though penalties may apply."
+      end
+    end
+
     private
 
     def to_date(value)
