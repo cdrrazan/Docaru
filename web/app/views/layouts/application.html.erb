@@ -26,6 +26,7 @@
         <nav>
           <a href="<%= calculator_path %>">When to start</a>
           <a href="<%= playbooks_path %>">Playbooks</a>
+          <a href="<%= plan_path %>">Pricing</a>
           <% if authenticated? %>
             <a href="<%= dashboard_path %>">Deadlines</a>
             <%= button_to "Sign out", session_path, method: :delete, class: "btn btn-quiet",

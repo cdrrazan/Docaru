@@ -1,0 +1,32 @@
+# Self-hosting, the short version:
+#
+#   cp .env.example .env && $EDITOR .env     # generate the four secrets
+#   docker compose up -d
+#
+# One service. No database container, no Redis, no separate worker — the
+# reminder sweep runs inside the web process, which matters because that sweep
+# is the entire product and must not be the thing an operator forgets to start.
+
+services:
+  renewaru:
+    build:
+      context: .
+    image: renewaru
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:80"
+    env_file:
+      - .env
+    volumes:
+      # SQLite databases and encrypted attachments. This is the only thing
+      # worth backing up, and losing it loses everything.
+      - renewaru-data:/rails/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  renewaru-data:

@@ -19,6 +19,8 @@ Rails.application.routes.draw do
 
   # ---- accounts -------------------------------------------------------------
 
+  resource :plan, only: %i[show update]
+
   resource :session
   resource :registration, only: %i[new create]
   resources :passwords, param: :token
