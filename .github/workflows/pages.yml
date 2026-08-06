@@ -37,7 +37,7 @@ jobs:
 
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.3"
+          ruby-version: .ruby-version
           bundler-cache: false
 
       # Nothing gets published that has not passed validation first. A wrong

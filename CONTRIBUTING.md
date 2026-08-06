@@ -20,7 +20,7 @@ new drafts, because a wrong renewal date is worse than no page at all.
    ruby bin/validate
    ```
 
-   Ruby 3.x and nothing else — no gems, no bundler. If that command passes, CI will pass.
+   Ruby 3.4.10 or newer and nothing else — no gems, no bundler. If that command passes, CI will pass.
 
 4. Open a pull request describing what you changed and linking the page you got it from.
 

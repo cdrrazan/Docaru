@@ -15,7 +15,7 @@ the commit that inverted it back.
 Two things in one repository, deliberately kept apart:
 
 - **`rules/`, `schema/`, `lib/`, `bin/`, `test/`** — the public renewal-rule dataset and its plain-Ruby
-  toolchain. **Ruby 3.x, no gems, no bundler, no network.** Never add a dependency here; the constraint
+  toolchain. **Ruby 3.4.10+, no gems, no bundler, no network.** Never add a dependency here; the constraint
   exists so a contributor can fix a typo in a YAML file without installing anything.
 - **`web/`** — a Rails 8.1 application that consumes the dataset. Gems live here only.
 

@@ -6,7 +6,7 @@ is, and [`../CLAUDE.md`](../CLAUDE.md) for the architecture in full.
 
 ## Running it
 
-Needs Ruby 3.3 and MySQL 8.0+ or MariaDB 10.6+.
+Needs Ruby 3.4.10+ and MySQL 8.0+ or MariaDB 10.6+.
 
 ```sh
 bin/setup                  # bundle, create the database, start the server
@@ -23,6 +23,18 @@ GRANT ALL PRIVILEGES ON `docaru\_%`.* TO 'docaru'@'localhost';
 
 The wildcard matters. The app uses four databases — its own plus separate ones for Solid Cache, Queue
 and Cable — and the test suite creates a set per parallel worker.
+
+If `bundle install` fails building **mysql2** with `unknown type name 'str'`, that is recent Apple
+clang refusing the gperf-generated header that mysql2 0.5.7 ships. Nothing is wrong with your setup
+and there is no newer release to move to; build it as C17:
+
+```sh
+bundle config set --local build.mysql2 "--with-cflags=-std=gnu17"
+bundle install
+```
+
+Local rather than committed, because it is a fault of one compiler on one platform. Linux CI and the
+Docker image build the same gem without it.
 
 ## The demo
 

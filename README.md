@@ -109,7 +109,7 @@ and the one where a missed deadline costs legal status rather than a late fee.
 
 ## Quick start
 
-Needs Ruby 3.3, and MySQL 8.0+ or MariaDB 10.6+ for the application.
+Needs Ruby 3.4.10+, and MySQL 8.0+ or MariaDB 10.6+ for the application.
 
 <table>
 <tr><td valign="top" width="50%">

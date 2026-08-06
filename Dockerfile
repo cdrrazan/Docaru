@@ -20,7 +20,7 @@
 # The rules dataset is baked in rather than fetched at runtime, so an instance
 # with no outbound network still knows every renewal rule it shipped with.
 
-ARG RUBY_VERSION=3.3.6
+ARG RUBY_VERSION=3.4.10
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
 WORKDIR /rails
