@@ -171,7 +171,14 @@ Authorisation is by scoping: `Authentication#household` establishes the scope on
   and asserts it; if you find yourself making `alerting?` conditional, that is the bug.
 - Public pages must stay crawlable *and* unambiguous. Every playbook declares a canonical URL, an origin that
   is not a country is a 404 rather than a silent fallback to domestic, and answered calculator results are
-  `noindex` because there is one URL per expiry date.
+  `noindex` because there is one URL per expiry date. Same trade for an origin the dataset has no override
+  for: it renders the generic abroad timings, because that is a true answer somebody asked for, but it is
+  `noindex` — there are ~200 such origins per rule and they all say the same thing.
+- **`Docaru::Countries` names countries; `Rule#origins` decides which pages exist.** These were one list
+  once, and that coupling is why the country picker was stuck at fourteen: widening it would have widened
+  the crawl surface to every country times every rule. The vault must hold a document from anywhere, so
+  `ISO` is the whole of ISO 3166-1 — alpha-2, alpha-3 for the MRZ, and the English name with its article.
+  Do not re-derive either list from the other.
 - `db/seeds.rb` is guarded to `Rails.env.local?`. `db:prepare` runs seeds on a fresh database and the Docker
   entrypoint runs `db:prepare`, so an unguarded seed plants a known password on every new instance.
   Its proportions are deliberate — six of thirteen documents have no expiry, because that is what a real

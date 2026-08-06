@@ -6,6 +6,16 @@
         "How long #{@rule.title} renewal takes #{context_phrase(@rule, @resolved.context)}, and why it cannot be completed before expiry." %>
 <% end %>
 
+<%# Origins the dataset has no override for render the generic abroad timings, %>
+<%# which is a true answer and a useful page — but the same true answer for %>
+<%# every one of the couple of hundred countries in that position. Served, not %>
+<%# indexed. See PlaybooksController#indexable_origin?. %>
+<% unless @indexable %>
+  <% content_for :robots do %>
+    <meta name="robots" content="noindex,follow">
+  <% end %>
+<% end %>
+
 <h1><%= page_title %></h1>
 
 <p class="lede">

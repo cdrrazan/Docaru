@@ -256,3 +256,44 @@ describe "the shipped dataset" do
     dataset.playbooks.each { |p| _(p.timeline.verdict).wont_be_empty }
   end
 end
+
+describe "the country table" do
+  let(:iso) { Docaru::Countries::ISO }
+
+  it "is the whole standard rather than the countries with rules" do
+    # The exact figure matters less than the order of magnitude: this list feeds
+    # the vault's country picker, and a picker built from the rules would offer
+    # one country.
+    _(iso.size).must_be :>, 200
+  end
+
+  it "is well formed throughout" do
+    iso.each do |alpha2, (alpha3, name)|
+      _(alpha2).must_match(/\A[A-Z]{2}\z/)
+      _(alpha3).must_match(/\A[A-Z]{3}\z/)
+      _(name).wont_be_empty
+    end
+  end
+
+  # Reversed into ALPHA3 for the passport reader, so a collision would silently
+  # make one country unreadable rather than raising anywhere.
+  it "has no duplicate alpha-3 codes" do
+    _(iso.values.map(&:first).uniq.size).must_equal iso.size
+  end
+
+  it "maps alpha-3 back to alpha-2, and nothing else" do
+    _(Docaru::Countries.from_alpha3("NPL")).must_equal "NP"
+    _(Docaru::Countries.from_alpha3("KEN")).must_equal "KE"
+    # Stateless travel documents. Not a country, so not a country code.
+    _(Docaru::Countries.from_alpha3("XXA")).must_be_nil
+  end
+
+  it "keeps the article out of the sort, and accents out of it too" do
+    names = Docaru::Countries.all.map { |code| Docaru::Countries.title(code) }
+
+    # Not filed under T for "the".
+    _(names.index("United Kingdom")).must_be :>, names.index("Nepal")
+    # Not filed after Zimbabwe for the circumflex.
+    _(names.index("Côte d'Ivoire")).must_be :<, names.index("Denmark")
+  end
+end

@@ -43,6 +43,12 @@ If your document genuinely is not on it, add it there in the same pull request a
 closed so that the app consuming this data never meets a kind it has no interface for, not to keep
 anyone out.
 
+**A new country needs no application change.** Add `rules/ke/passport.yml` with `country_code: KE`
+and it appears in the playbook index, gets its own pages, its own sitemap entries and its own
+reminder arithmetic. The application already knows every country in ISO 3166-1 — the dataset decides
+which of them have renewal answers, not which of them exist. Storing a Kenyan document has never
+needed a Kenyan rule.
+
 ## Verifying a rule
 
 This is the part that matters, so it has a bar.

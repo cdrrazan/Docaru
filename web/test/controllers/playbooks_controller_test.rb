@@ -74,6 +74,16 @@ class PlaybooksControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", /from Germany/
   end
 
+  # Every country in the standard renders, not only the fourteen the picker used
+  # to offer. Kenya has no override and never had one; the page is still a real
+  # answer for somebody renewing a Nepali passport from Nairobi.
+  test "any country in ISO 3166-1 renders" do
+    get origin_playbook_path(country_code: "np", document_kind: "passport", origin: "ke")
+
+    assert_response :success
+    assert_select "h1", /from Kenya/
+  end
+
   # The route matches any two letters. Without this the domestic page was served
   # at 676 addresses per document, and crawlers were left to work out which one
   # was real.
@@ -81,6 +91,30 @@ class PlaybooksControllerTest < ActionDispatch::IntegrationTest
     get origin_playbook_path(country_code: "np", document_kind: "passport", origin: "zz")
 
     assert_response :not_found
+  end
+
+  # Serving a page and indexing it are separate decisions, and widening the
+  # country list made the difference matter: an origin without an override
+  # renders the generic abroad timings, so there is one substantive page and
+  # about two hundred addresses carrying it. The one with an override is a
+  # distinct answer and stays indexable.
+  test "an origin with an override is indexable" do
+    get origin_playbook_path(country_code: "np", document_kind: "passport", origin: "gb")
+
+    assert_select "meta[name=robots]", count: 0
+  end
+
+  test "an origin with no override is served but not indexed" do
+    get origin_playbook_path(country_code: "np", document_kind: "passport", origin: "ke")
+
+    assert_response :success
+    assert_select "meta[name=robots][content=?]", "noindex,follow"
+  end
+
+  test "the domestic playbook is indexable" do
+    get playbook_path(country_code: "np", document_kind: "passport")
+
+    assert_select "meta[name=robots]", count: 0
   end
 
   # Not merely a duplicate URL: it rendered "renewal from Nepal" against the

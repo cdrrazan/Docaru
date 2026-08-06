@@ -19,6 +19,7 @@ class PlaybooksController < ApplicationController
     @resolved = @rule.resolve(RuleCatalog.normalise_context(@rule, params[:origin]))
     @timeline = @resolved.timeline
     @other_contexts = RuleCatalog.origins_for(@rule) - [ @resolved.context ]
+    @indexable = indexable_origin?
   rescue RuleCatalog::UnknownRule
     render "shared/not_found", status: :not_found
   end
@@ -46,6 +47,21 @@ class PlaybooksController < ApplicationController
   # page at 676 addresses per document and asked crawlers to sort out which of
   # them was the real one.
   def unknown_origin? = origin.present? && !Docaru::Countries::NAMES.key?(origin)
+
+  # Whether this page is worth putting in an index, which is not the same
+  # question as whether it is worth serving.
+  #
+  # An origin the dataset has an override for is a distinct answer: different
+  # processing times, different fees, different mission. An origin without one
+  # renders the generic abroad timings, so every such page carries the same
+  # substance as every other — and there are as many of them as there are
+  # countries. Serving them is right, because somebody who typed one wants that
+  # answer and the timings are honest. Indexing them would file 200-odd
+  # near-identical pages per rule against the one that should be ranking.
+  #
+  # This is the same trade the calculator already makes for answered results,
+  # for the same reason.
+  def indexable_origin? = @resolved.domestic? || @rule.origins.include?(@resolved.context)
 
   def head_unknown_origin
     render "shared/not_found", status: :not_found

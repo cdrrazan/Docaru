@@ -239,17 +239,33 @@ class MachineReadableZone
 
     def strip(field) = field.to_s.tr(FILLER, "").strip.presence
 
-    # The MRZ uses three-letter ICAO codes; the dataset is keyed on ISO alpha-2.
-    # Only codes the dataset can actually act on are mapped — anything else is
-    # left nil so the user picks, rather than being silently given the wrong
-    # country.
-    ICAO_TO_ISO = {
-      "NPL" => "NP", "GBR" => "GB", "USA" => "US", "AUS" => "AU", "QAT" => "QA",
-      "ARE" => "AE", "MYS" => "MY", "KOR" => "KR", "JPN" => "JP", "IND" => "IN",
-      "CAN" => "CA", "DEU" => "DE", "PRT" => "PT", "SAU" => "SA"
+    # ICAO codes that are not ISO 3166-1 alpha-3. "D" is Germany, written that
+    # way on German passports since long before this standard existed, and the
+    # GB* family encodes a class of British nationality — overseas territories
+    # citizen, national overseas, subject — rather than a different country.
+    # They all issue documents, so they all resolve to a country.
+    #
+    # Deliberately absent: XXA, XXB, XXC and XXD (stateless and refugee travel
+    # documents), UNO, UNA and UNK (United Nations), and EUE. Those are real
+    # codes on real documents that have no issuing *country*, and guessing one
+    # would put a wrong answer in a field the holder cannot easily check.
+    ICAO_ALIASES = {
+      "D" => "DE",
+      "GBD" => "GB", "GBN" => "GB", "GBO" => "GB", "GBP" => "GB", "GBS" => "GB"
     }.freeze
 
-    def country(code) = ICAO_TO_ISO[strip(code)]
+    # The MRZ is written in three-letter codes; everything else here is keyed on
+    # ISO alpha-2. The full standard is mapped rather than only the countries
+    # with renewal rules: reading KEN off a Kenyan passport and filling in the
+    # country is useful to somebody filing it in the vault whether or not anybody
+    # has ever written a Kenyan renewal rule. Unknown codes still return nil, so
+    # a misread is a blank field for a person to complete rather than a wrong
+    # country stated with confidence.
+    def country(code)
+      value = strip(code) or return nil
+
+      ICAO_ALIASES[value] || Docaru::Countries.from_alpha3(value)
+    end
 
     def parse_sex(char)
       case char

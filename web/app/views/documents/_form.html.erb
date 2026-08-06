@@ -30,7 +30,7 @@
     <%= form.label :issuing_country, "Which country issued it?" %>
     <p class="hint">Not where you live — who issued the document.</p>
     <%= form.select :issuing_country,
-          Docaru::Countries::NAMES.map { |code, name| [ Docaru::Countries.title(code), code ] },
+          Docaru::Countries.all.map { |code| [ Docaru::Countries.title(code), code ] },
           { include_blank: "Choose a country…" }, required: true %>
   </div>
 
@@ -42,7 +42,7 @@
     </p>
     <%= form.select :applying_from,
           [ [ "At home, in the issuing country", "domestic" ] ] +
-            Docaru::Countries::NAMES.map { |code, _| [ "From #{Docaru::Countries.title(code)}", code ] } %>
+            Docaru::Countries.all.map { |code| [ "From #{Docaru::Countries.title(code)}", code ] } %>
   </div>
 
   <div class="field">

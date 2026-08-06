@@ -93,6 +93,30 @@ class VaultIndexTest < ActionDispatch::IntegrationTest
     assert_select ".banner", /Nothing matches/
   end
 
+  # The vault has to hold a document from anywhere. The picker offered fourteen
+  # countries for as long as the renewal dataset was the thing driving it, which
+  # meant a Kenyan birth certificate had nowhere to be filed — not because the
+  # vault could not store it, but because the dropdown had no Kenya in it.
+  test "stores and lists a document from any country in the standard" do
+    kenyan = members(:rajan).documents.create!(
+      kind: "birth_certificate", issuing_country: "KE", label: "Nairobi birth certificate"
+    )
+
+    assert_equal :stored, kenyan.status
+
+    get documents_path
+
+    assert_select "a", text: "Nairobi birth certificate"
+  end
+
+  test "the country picker offers every country, not only the ones with rules" do
+    get new_document_path
+
+    assert_select "select[name='document[issuing_country]'] option", minimum: 200
+    assert_select "select[name='document[issuing_country]'] option[value=?]", "KE", text: "Kenya"
+    assert_select "select[name='document[issuing_country]'] option[value=?]", "BR", text: "Brazil"
+  end
+
   test "a document with no expiry reads as stored rather than incomplete" do
     get document_path(@degree)
 

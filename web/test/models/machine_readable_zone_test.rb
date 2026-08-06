@@ -184,8 +184,34 @@ class MachineReadableZoneTest < ActiveSupport::TestCase
     assert_equal Date.new(1965, 11, 30), result.date_of_birth
   end
 
-  test "leaves the country blank rather than guessing an unmapped code" do
+  # Every country in ISO 3166-1, not only the ones with renewal rules. Somebody
+  # filing a Brazilian passport in the vault wants the field filled whether or
+  # not anybody has ever written a Brazilian rule.
+  test "reads any country in the standard" do
     result = MachineReadableZone.parse(td3(issuing: "BRA", nationality: "BRA").join("\n"))
+
+    assert_equal "BR", result.issuing_country
+  end
+
+  # ICAO's own codes for German passports and for the classes of British
+  # nationality. All of them issue documents, so all of them have a country.
+  #
+  # Germany's is one character in a three-character field, written "D<<" on the
+  # document itself — the filler is part of the field, not padding this test
+  # added for convenience.
+  test "reads the ICAO codes that are not ISO codes" do
+    german = MachineReadableZone.parse(td3(issuing: "D<<", nationality: "D<<").join("\n"))
+    british = MachineReadableZone.parse(td3(issuing: "GBN", nationality: "GBN").join("\n"))
+
+    assert_equal "DE", german.issuing_country
+    assert_equal "GB", british.issuing_country
+  end
+
+  # XXA is a stateless person's travel document. It is a real code on a real
+  # document, and there is no issuing country to put in the field — so the field
+  # stays empty for a person to complete rather than being filled with a guess.
+  test "leaves the country blank when the code names no country" do
+    result = MachineReadableZone.parse(td3(issuing: "XXA", nationality: "XXA").join("\n"))
 
     assert_nil result.issuing_country
   end

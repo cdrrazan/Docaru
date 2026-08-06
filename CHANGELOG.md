@@ -7,6 +7,29 @@ Notable changes, newest first. Rule data corrections are not listed individually
 
 Everything so far. Nothing is released yet, and the dataset is entirely unverified.
 
+### The vault holds documents from anywhere
+
+The country picker offered fourteen countries — the ones the renewal dataset happened to mention.
+That was the right list for a renewal tracker and the wrong list for a vault: a Kenyan birth
+certificate could not be filed, not because anything refused to store it, but because the dropdown
+had no Kenya in it. `Docaru::Countries` is now the whole of ISO 3166-1, 249 entries, with alpha-3
+alongside so the passport reader can use the same table.
+
+The reason it stayed at fourteen for so long is that one list was doing two jobs. It named countries
+*and* it decided which playbook URLs were real, so widening it would have widened the crawl surface
+to every country times every rule — the duplicate-content problem that was already fixed once. Those
+are separate now: `Countries::ISO` names, `Rule#origins` decides. An origin with an override is a
+distinct answer and stays indexable; an origin without one still renders the generic abroad timings,
+because somebody asked and the timings are honest, but carries `noindex`.
+
+Also: the passport reader maps every ISO country rather than the fourteen, plus the ICAO codes that
+are not ISO codes — `D` for Germany, and the `GB*` family for the classes of British nationality.
+Codes that name no country at all (`XXA` and the other stateless and refugee documents, the UN
+codes) still return nil, so the field stays empty for a person to complete rather than being filled
+with a guess.
+
+Adding a country to the *renewal* side is still one YAML file and no application change.
+
 ### Renamed to Docaru
 
 The application was called Renewaru, which named the layer on top rather than the thing underneath —
