@@ -1,7 +1,12 @@
 # Renewal rules
 
 **Every document you own has a deadline. This is the open dataset that says which one is next,
-and exactly what to do about it.**
+and exactly what to do about it — plus the application that watches yours.**
+
+[![Validate rules](https://github.com/cdrrazan/Renewaru/actions/workflows/validate.yml/badge.svg)](https://github.com/cdrrazan/Renewaru/actions/workflows/validate.yml)
+[![App](https://github.com/cdrrazan/Renewaru/actions/workflows/app.yml/badge.svg)](https://github.com/cdrrazan/Renewaru/actions/workflows/app.yml)
+[![Data: CC BY 4.0](https://img.shields.io/badge/data-CC%20BY%204.0-blue)](LICENSE)
+[![Code: MIT](https://img.shields.io/badge/code-MIT-blue)](LICENSE)
 
 A calendar reminder tells you a passport expires on 14 March. It does not tell you to start in
 November, because renewing from abroad takes ten weeks and needs a police certificate you have not
@@ -57,17 +62,33 @@ toolchain installed before you can fix a typo in it gets fewer corrections.
 `bin/build` also emits `site/rules.json` — the whole dataset plus the derived timeline for each
 playbook, so a consumer never has to reimplement the arithmetic.
 
-## Running the application
+## Seeing it work
 
-Needs MySQL 8.0+ or MariaDB 10.6+. Point it at a server with `DATABASE_HOST`, `DATABASE_USERNAME`
-and `DATABASE_PASSWORD`, or take the defaults (`renewaru`/`renewaru` on `127.0.0.1`) and create the
-user locally.
+Needs Ruby 3.3 and MySQL 8.0+ or MariaDB 10.6+.
 
 ```sh
 cd web
-bin/setup
+bin/setup --skip-server
+bin/rails db:seed          # a household with something wrong in it
 bin/rails server
 ```
+
+Sign in at `/session/new` as `demo@renewaru.test` / `demo-password-change-me`.
+
+The seeded household holds every state the dashboard can reach — on track, due now, overdue,
+impossible, expired, and a document the dataset has no rule for. Two rows are the ones to look at:
+
+> **Third-party insurance** — expired a fortnight ago
+> **Vehicle registration** — due to be renewed in two months, and **blocked**, because Nepal will not
+> renew one without the other
+
+Both dates look survivable on their own. The renewal is already blocked. That is the failure a
+product storing only expiry dates cannot see, and it is the reason this one stores renewal *process*
+rather than renewal dates.
+
+Defaults to `renewaru`/`renewaru` on `127.0.0.1`; override with `DATABASE_HOST`, `DATABASE_USERNAME`
+and `DATABASE_PASSWORD`. Full setup notes, including the database grant, are in
+[`web/README.md`](web/README.md).
 
 Or self-host:
 
@@ -95,6 +116,13 @@ attachments. Neither is much use without the other.
 - **MRZ reading** — passports and ID cards, with check-digit validation, so a misread is caught
   rather than stored as somebody's expiry date.
 - **A vault** — scans encrypted in the browser. The server holds ciphertext and no key.
+- **Installable, and readable offline** — the playbooks are cached for a queue at a consulate or a
+  plane. Only the public ones: nothing behind a login is ever written to disk.
+
+Reminders arrive by email always, and by web push where a household has turned it on. **No billing
+state ever stops one.** Somebody whose card expires while they are abroad is precisely the person
+most likely to need the alert, so a lapsed subscription costs capacity — more people, more documents
+— and never safety. There is a test that walks every billing status and asserts it.
 
 ## How a rule works
 
@@ -153,6 +181,20 @@ server has no key. [SECURITY.md](SECURITY.md) is precise about what that does an
 
 Alerts and playbooks are never paywalled. Paywalling the safety feature would poison the trust the
 whole thing rests on.
+
+## Helping
+
+The most valuable contribution is not a new country. **It is verifying one that already exists.**
+Every rule here says `draft`, meaning the numbers are estimates nobody has checked against the
+issuing authority — and a wrong renewal date is worse than none, because it replaces a vague worry
+that prompts checking with a false precision that prevents it.
+
+Turning one draft into a sourced `verified` is worth more than five new drafts. It takes an evening
+and a government website. [Claim one first](../../issues/new?template=verify-a-rule.md) so two people
+do not read the same consulate page, then see [CONTRIBUTING.md](CONTRIBUTING.md) for the bar.
+
+Correcting a rule needs no toolchain: edit one YAML file, run `ruby bin/validate`, open a pull
+request. No bundler, no database, no account.
 
 ## Caveat
 
