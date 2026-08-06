@@ -21,7 +21,7 @@ jobs:
       mysql:
         image: mysql:8.4
         env:
-          MYSQL_ROOT_PASSWORD: renewaru
+          MYSQL_ROOT_PASSWORD: docaru
         ports:
           - 3306:3306
         options: >-
@@ -49,7 +49,7 @@ jobs:
           # the separate cache, queue and cable databases — more than a scoped
           # user is granted. Fine for a throwaway CI container.
           DATABASE_USERNAME: root
-          DATABASE_PASSWORD: renewaru
+          DATABASE_PASSWORD: docaru
           DATABASE_HOST: 127.0.0.1
         run: bin/rails db:test:prepare test
 

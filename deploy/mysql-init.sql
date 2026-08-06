@@ -9,14 +9,14 @@
 -- The wildcard is scoped to this application's own prefix rather than *.*, so
 -- the account cannot reach anything else that later shares the server.
 
-CREATE DATABASE IF NOT EXISTS `renewaru_production`
+CREATE DATABASE IF NOT EXISTS `docaru_production`
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE IF NOT EXISTS `renewaru_production_cache`
+CREATE DATABASE IF NOT EXISTS `docaru_production_cache`
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE IF NOT EXISTS `renewaru_production_queue`
+CREATE DATABASE IF NOT EXISTS `docaru_production_queue`
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE IF NOT EXISTS `renewaru_production_cable`
+CREATE DATABASE IF NOT EXISTS `docaru_production_cable`
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-GRANT ALL PRIVILEGES ON `renewaru\_%`.* TO 'renewaru'@'%';
+GRANT ALL PRIVILEGES ON `docaru\_%`.* TO 'docaru'@'%';
 FLUSH PRIVILEGES;

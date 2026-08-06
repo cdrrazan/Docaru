@@ -31,7 +31,7 @@ household = Household.find_or_create_by!(name: "The Bhattarai household") do |h|
   h.plan = "household"
 end
 
-user = User.find_or_initialize_by(email_address: "demo@renewaru.test")
+user = User.find_or_initialize_by(email_address: "demo@docaru.test")
 user.update!(name: "Sunita", household: household, password: PASSWORD, password_confirmation: PASSWORD)
 
 people = {
@@ -124,7 +124,7 @@ if Rails.env.development?
     Demo household ready.
 
       Sign in at  /session/new
-      Email       demo@renewaru.test
+      Email       demo@docaru.test
       Password    #{PASSWORD}
 
     #{household.documents.count} documents across #{household.members.count} people.

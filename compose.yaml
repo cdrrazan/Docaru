@@ -13,18 +13,18 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD:?set DATABASE_ROOT_PASSWORD in .env}
-      MYSQL_DATABASE: ${DATABASE_NAME:-renewaru_production}
-      MYSQL_USER: ${DATABASE_USERNAME:-renewaru}
+      MYSQL_DATABASE: ${DATABASE_NAME:-docaru_production}
+      MYSQL_USER: ${DATABASE_USERNAME:-docaru}
       MYSQL_PASSWORD: ${DATABASE_PASSWORD:?set DATABASE_PASSWORD in .env}
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
     volumes:
-      - renewaru-db:/var/lib/mysql
+      - docaru-db:/var/lib/mysql
       # Grants the app user rights over the cache, queue and cable databases as
       # well as its own. MYSQL_USER alone is only scoped to MYSQL_DATABASE, so
       # without this the first boot fails creating the Solid Queue database.
-      - ./deploy/mysql-init.sql:/docker-entrypoint-initdb.d/10-renewaru.sql:ro
+      - ./deploy/mysql-init.sql:/docker-entrypoint-initdb.d/10-docaru.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DATABASE_ROOT_PASSWORD}"]
       interval: 10s
@@ -32,10 +32,10 @@ services:
       retries: 10
       start_period: 30s
 
-  renewaru:
+  docaru:
     build:
       context: .
-    image: renewaru
+    image: docaru
     restart: unless-stopped
     depends_on:
       db:
@@ -51,7 +51,7 @@ services:
     volumes:
       # Encrypted attachments only — the databases live in the db service now.
       # Both volumes need backing up, and neither is useful without the other.
-      - renewaru-storage:/rails/storage
+      - docaru-storage:/rails/storage
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/up"]
       interval: 30s
@@ -60,5 +60,5 @@ services:
       start_period: 30s
 
 volumes:
-  renewaru-db:
-  renewaru-storage:
+  docaru-db:
+  docaru-storage:
