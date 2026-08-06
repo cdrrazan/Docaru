@@ -7,6 +7,29 @@ Notable changes, newest first. Rule data corrections are not listed individually
 
 Everything so far. Nothing is released yet, and the dataset is entirely unverified.
 
+### Renamed to Docaru
+
+The application was called Renewaru, which named the layer on top rather than the thing underneath —
+the same inversion the repositioning below corrected in the code. The vault is the product, so the
+name roots on the documents.
+
+The **public renewal-rule dataset keeps the `Renewaru` module** and `lib/renewaru/`. That name was
+never wrong for a renewal-rule dataset; it was only ever wrong as the name of the vault consuming it.
+One name per plane is the intent, not an oversight.
+
+Not a no-op for anyone already running it:
+
+- Default database names move from `renewaru_*` to `docaru_*` and the default user from `renewaru` to
+  `docaru`. Either grant the new user (`web/README.md` has the statement) or set `DATABASE_NAME` and
+  `DATABASE_USERNAME` to the old values — nothing in the schema changed, only what it is called.
+- The Compose volumes are renamed, which **orphans** the old ones rather than deleting them. A
+  `docker compose up` after this starts against empty storage until `renewaru-db` and
+  `renewaru-storage` are renamed to `docaru-db` and `docaru-storage`. Nothing is destroyed, but the
+  encrypted attachments are not reachable until the volumes match, and they cannot be recovered from
+  anywhere else.
+- The schema's `$id` moves to the new repository URL, changing the identity of the schema document.
+  Safe now because nothing external consumes it; it would not have been later.
+
 ### Repositioned: the vault is the product
 
 The application began as a renewal-deadline tracker that happened to store documents. It is now an
