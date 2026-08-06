@@ -15,7 +15,7 @@ require "fileutils"
 require_relative "../lib/renewaru/dataset"
 require_relative "../lib/renewaru/playbook"
 
-REPO_URL = ENV.fetch("REPO_URL", "https://github.com/cdrrazan/Renewaru")
+REPO_URL = ENV.fetch("REPO_URL", "https://github.com/cdrrazan/Docaru")
 out = ARGV[0] || File.join(Renewaru::ROOT, "site")
 
 dataset = Renewaru::Dataset.load

@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Report privately through [GitHub's advisory form](https://github.com/cdrrazan/Renewaru/security/advisories/new),
+Report privately through [GitHub's advisory form](https://github.com/cdrrazan/Docaru/security/advisories/new),
 or by email to the address on the maintainer's GitHub profile. Please do not open a public issue for
 anything exploitable.
 

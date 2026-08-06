@@ -13,12 +13,12 @@ bin/setup                  # bundle, create the database, start the server
 bin/rails db:seed          # a demo household — see below
 ```
 
-Defaults to `renewaru`/`renewaru` on `127.0.0.1`. Override with `DATABASE_HOST`, `DATABASE_USERNAME`
+Defaults to `docaru`/`docaru` on `127.0.0.1`. Override with `DATABASE_HOST`, `DATABASE_USERNAME`
 and `DATABASE_PASSWORD`. If the user does not exist yet:
 
 ```sql
-CREATE USER 'renewaru'@'localhost' IDENTIFIED BY 'renewaru';
-GRANT ALL PRIVILEGES ON `renewaru\_%`.* TO 'renewaru'@'localhost';
+CREATE USER 'docaru'@'localhost' IDENTIFIED BY 'docaru';
+GRANT ALL PRIVILEGES ON `docaru\_%`.* TO 'docaru'@'localhost';
 ```
 
 The wildcard matters. The app uses four databases — its own plus separate ones for Solid Cache, Queue
@@ -45,7 +45,7 @@ vault exists:
 | Vehicle registration | **blocked** by the expired insurance above |
 | UK residence permit | no rule in the dataset yet |
 
-Sign in as `demo@renewaru.test` / `demo-password-change-me`. Seeds run only in development and test,
+Sign in as `demo@docaru.test` / `demo-password-change-me`. Seeds run only in development and test,
 are idempotent, and are dated relative to today so they never go stale.
 
 The stored rows are the product: documents somebody needs at short notice and cannot reach. The last

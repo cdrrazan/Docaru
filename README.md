@@ -1,12 +1,12 @@
 <div align="center">
 
-# Renewaru
+# Docaru
 
 **A self-hosted vault for the documents you will not put in Google Drive —**
 **that also tells you when the ones with deadlines need renewing.**
 
-[![Validate rules](https://github.com/cdrrazan/Renewaru/actions/workflows/validate.yml/badge.svg)](https://github.com/cdrrazan/Renewaru/actions/workflows/validate.yml)
-[![App](https://github.com/cdrrazan/Renewaru/actions/workflows/app.yml/badge.svg)](https://github.com/cdrrazan/Renewaru/actions/workflows/app.yml)
+[![Validate rules](https://github.com/cdrrazan/Docaru/actions/workflows/validate.yml/badge.svg)](https://github.com/cdrrazan/Docaru/actions/workflows/validate.yml)
+[![App](https://github.com/cdrrazan/Docaru/actions/workflows/app.yml/badge.svg)](https://github.com/cdrrazan/Docaru/actions/workflows/app.yml)
 [![Data: CC BY 4.0](https://img.shields.io/badge/data-CC%20BY%204.0-0a7d55)](LICENSE)
 [![Code: MIT](https://img.shields.io/badge/code-MIT-0a7d55)](LICENSE)
 [![Self-hosted](https://img.shields.io/badge/self--hosted-docker%20compose-1c5d4a)](#self-hosting)
@@ -123,7 +123,7 @@ bin/rails db:seed     # a real drawer
 bin/rails server
 ```
 
-`demo@renewaru.test` / `demo-password-change-me`
+`demo@docaru.test` / `demo-password-change-me`
 
 </td><td valign="top" width="50%">
 
@@ -165,7 +165,7 @@ Two containers: the application and MySQL. The app stays a single process — So
 Puma, so the nightly reminder sweep is not a service anyone can forget to start. That sweep is the
 product.
 
-Back up **both** volumes: `renewaru-db` holds the deadlines, `renewaru-storage` holds the encrypted
+Back up **both** volumes: `docaru-db` holds the deadlines, `docaru-storage` holds the encrypted
 attachments, and neither is much use without the other.
 
 > [!WARNING]

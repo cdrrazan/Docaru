@@ -56,7 +56,7 @@ bin/importmap audit
 bin/ci                                 # everything above, via config/ci.rb
 ```
 
-Needs MySQL 8.0+/MariaDB 10.6+. Defaults to `renewaru`/`renewaru` on `127.0.0.1`; override with
+Needs MySQL 8.0+/MariaDB 10.6+. Defaults to `docaru`/`docaru` on `127.0.0.1`; override with
 `DATABASE_HOST`/`DATABASE_USERNAME`/`DATABASE_PASSWORD`. Tests run parallel and use four logical databases
 per worker (primary, cache, queue, cable), so the test user needs create rights — CI uses `root`.
 

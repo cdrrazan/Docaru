@@ -11,7 +11,7 @@ class PwaTest < ActionDispatch::IntegrationTest
 
     manifest = JSON.parse(response.body)
 
-    assert_equal "Renewal playbooks", manifest["name"]
+    assert_equal "Docaru", manifest["name"]
     assert_equal "standalone", manifest["display"]
     assert manifest["icons"].any?, "the manifest lists no icons"
   end

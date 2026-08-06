@@ -1,6 +1,8 @@
 # Renewal Vault — product spec v0.1
 
-**Working name:** Renewaru (portfolio convention) / needs a real consumer name before launch — see §12.
+**Name:** Docaru. The §12 question is settled: the application is the vault, so the name roots on
+the documents rather than on the renewals, which are the layer above. The public renewal-rule dataset
+keeps the `Renewaru` module — that name was only ever wrong for the application.
 
 ---
 

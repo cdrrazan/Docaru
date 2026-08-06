@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/cdrrazan/Renewaru/schema/renewal-rule.schema.json",
+  "$id": "https://github.com/cdrrazan/Docaru/schema/renewal-rule.schema.json",
   "title": "RenewalRule",
   "description": "A single country x document-kind renewal rule. One file per rule, under rules/<country_code lowercased>/<document_kind>.yml. This is public-plane data: it contains no user information and is safe to serve, cache, and mirror.",
   "type": "object",

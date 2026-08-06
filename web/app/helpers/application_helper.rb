@@ -19,12 +19,12 @@ module ApplicationHelper
   # Squished because these are written as wrapped multi-line ERB blocks, and the
   # newlines survive into the attribute otherwise, which truncates the card at
   # the first line break.
-  def social_title = meta_text(content_for(:title), "Renewal playbooks")
+  def social_title = meta_text(content_for(:title), "Docaru")
 
   def social_description
     meta_text(content_for(:description),
-              "Every document you own has a deadline. We tell you which one is next, " \
-              "and exactly what to do about it.")
+              "A self-hosted vault for the documents you will not put in Google Drive — " \
+              "and a reminder when the ones with deadlines need renewing.")
   end
 
   private
