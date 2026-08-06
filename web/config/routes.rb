@@ -39,8 +39,11 @@ Rails.application.routes.draw do
 
   get "dashboard", to: "dashboard#show", as: :dashboard
   resources :members, except: :show
-  # No index: the dashboard is the list, sorted by urgency rather than by name.
-  resources :documents, except: :index do
+
+  # The dashboard answers "what needs doing"; this answers "where is Aama's
+  # citizenship certificate". Both are needed, and for most of a vault — the
+  # documents that never expire — only the second one ever is.
+  resources :documents do
     # Ciphertext in, ciphertext out. The server has no key and no code that
     # would know what to do with one.
     resources :attachments, only: %i[create show destroy]

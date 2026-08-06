@@ -4,9 +4,15 @@ class DashboardController < ApplicationController
   def show
     @members = household.members.ordered
     # Sorted by trouble, not by date added: this screen is a queue of what to do
-    # next, not a filing cabinet.
+    # next. The filing cabinet is DocumentsController#index.
     @documents = household.documents.includes(:member).to_a.sort_by(&:sort_key)
-    @needs_attention = @documents.reject { |doc| doc.status == :ahead }
+
+    # Only documents with a deadline can want anything. Most of a vault never
+    # will, and listing a birth certificate under "needs attention" would train
+    # people to ignore the section that matters.
+    @needs_attention = @documents.select(&:needs_attention?)
+    @watching = @documents.select { |doc| doc.dated? && !doc.needs_attention? }
+    @stored = @documents.reject(&:dated?)
 
     # A renewal blocked by another document the household holds. This is the
     # warning nobody else can produce, so it gets its own place on the page

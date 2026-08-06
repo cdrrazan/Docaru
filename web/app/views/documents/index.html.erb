@@ -1,0 +1,85 @@
+<% content_for :title, "Your vault" %>
+
+<h1>Your vault</h1>
+
+<% if @total.zero? %>
+  <p class="lede">
+    Nothing stored yet. Add a document and its scans — encrypted in your browser before they are
+    uploaded, so we hold ciphertext and never the key.
+  </p>
+  <p>
+    <% if @members.any? %>
+      <%= link_to "Add a document", new_document_path, class: "btn" %>
+    <% else %>
+      <%= link_to "Add a person", new_member_path, class: "btn" %>
+    <% end %>
+  </p>
+<% else %>
+  <p class="lede">
+    <%= pluralize(@total, "document") %> across <%= pluralize(@members.size, "person") %>.
+    Everything is here, whether or not it expires.
+  </p>
+
+  <%= form_with url: documents_path, method: :get, data: { turbo: false }, class: "filters" do %>
+    <div class="field">
+      <%= label_tag :q, "Search" %>
+      <p class="hint">
+        Matches the label, the kind, the issuing country and the person. Identifiers and notes are
+        encrypted, so they are deliberately not searchable.
+      </p>
+      <%= search_field_tag :q, @query, placeholder: "citizenship, passport, Aama…" %>
+    </div>
+
+    <% if @members.size > 1 %>
+      <div class="field">
+        <%= label_tag :member_id, "Whose" %>
+        <%= select_tag :member_id,
+              options_from_collection_for_select(@members, :id, :name, @member&.id),
+              include_blank: "Everyone" %>
+      </div>
+    <% end %>
+
+    <p>
+      <%= submit_tag "Find", class: "btn" %>
+      <% if @query.present? || @member %>
+        <%= link_to "Clear", documents_path, class: "btn btn-quiet" %>
+      <% end %>
+    </p>
+  <% end %>
+
+  <% if @documents.empty? %>
+    <div class="banner">
+      Nothing matches that. <%= link_to "Show everything", documents_path %>.
+    </div>
+  <% else %>
+    <% @documents.group_by { |doc| doc.member }.each do |member, documents| %>
+      <section>
+        <h2><%= member.name %><% if member.relationship.present? %> <span class="note">· <%= member.relationship %></span><% end %></h2>
+
+        <ul class="docs">
+          <% documents.each do |document| %>
+            <li>
+              <%= link_to document.title, document_path(document) %>
+              <%= status_tag(document) %>
+              <p class="note">
+                <%= country_title(document.issuing_country) %>
+                <% if document.dated? %>
+                  · expires <%= document.expires_on.strftime("%-d %b %Y") %>
+                <% else %>
+                  · no expiry
+                <% end %>
+                ·
+                <%= document.attachments.size.zero? ? "no scans yet" : pluralize(document.attachments.size, "page") %>
+              </p>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+  <% end %>
+
+  <p>
+    <%= link_to "Add a document", new_document_path, class: "btn" %>
+    <%= link_to "What needs doing", dashboard_path, class: "btn btn-quiet" %>
+  </p>
+<% end %>

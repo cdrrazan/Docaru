@@ -1,10 +1,11 @@
-<% content_for :title, "Your deadlines" %>
+<% content_for :title, "Your household" %>
 
-<h1>Your deadlines</h1>
+<h1>Your household</h1>
 
 <% if @documents.empty? %>
   <p class="lede">
-    Nothing tracked yet. Add a person, then add what they hold — we work out the rest.
+    Nothing stored yet. Put a document in — a certificate, a passport, a deed — and its scans are
+    encrypted in your browser before they are uploaded. We hold ciphertext and never the key.
   </p>
 
   <p>
@@ -15,19 +16,32 @@
     <% end %>
   </p>
 <% else %>
-  <% next_up = @documents.first %>
+  <%# The queue, and only the queue. A vault is mostly documents that want %>
+  <%# nothing, and mixing those in here would teach people to skim past it. %>
+  <% if @needs_attention.any? %>
+    <% next_up = @needs_attention.first %>
 
-  <section class="answer <%= "answer-warn" unless next_up.status == :ahead %>">
-    <p class="eyebrow">Next up</p>
-    <p class="headline"><%= next_up.title %></p>
-    <p><%= document_verdict(next_up) %></p>
-    <p class="note"><%= next_up.member.name %></p>
-  </section>
+    <section class="answer answer-warn">
+      <p class="eyebrow">Needs you</p>
+      <p class="headline"><%= next_up.title %></p>
+      <p><%= document_verdict(next_up) %></p>
+      <p class="note"><%= next_up.member.name %></p>
+    </section>
 
-  <% if @needs_attention.size > 1 %>
-    <p class="note">
-      <%= pluralize(@needs_attention.size, "document") %> need attention.
-    </p>
+    <% if @needs_attention.size > 1 %>
+      <p class="note">
+        <%= pluralize(@needs_attention.size, "document") %> need attention.
+      </p>
+    <% end %>
+  <% else %>
+    <section class="answer">
+      <p class="eyebrow">Nothing to do</p>
+      <p class="headline">No deadline needs you right now.</p>
+      <p>
+        <%= pluralize(@documents.size, "document") %> stored and
+        <%= @watching.any? ? "#{pluralize(@watching.size, "deadline")} being watched" : "no deadlines to watch" %>.
+      </p>
+    </section>
   <% end %>
 
   <% @blocked.each do |document, chain| %>
@@ -46,34 +60,55 @@
     <% end %>
   <% end %>
 
-  <section>
-    <h2>Everything you are tracking</h2>
-    <div class="scroll" tabindex="0" role="region" aria-label="Everything you are tracking">
-      <table>
-        <caption class="visually-hidden">
-          Every document you are tracking, most urgent first.
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">Document</th>
-            <th scope="col">Person</th>
-            <th scope="col" class="num">Start by</th>
-            <th scope="col">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @documents.each do |document| %>
+  <% if (dated = @needs_attention + @watching).any? %>
+    <section>
+      <h2>Deadlines</h2>
+      <div class="scroll" tabindex="0" role="region" aria-label="Documents with a deadline">
+        <table>
+          <caption class="visually-hidden">
+            Every document with an expiry date, most urgent first.
+          </caption>
+          <thead>
             <tr>
-              <td><%= link_to document.title, document_path(document) %></td>
-              <td class="note"><%= document.member.name %></td>
-              <td class="num"><%= document.start_by&.strftime("%-d %b %Y") || "—" %></td>
-              <td><%= status_tag(document) %></td>
+              <th scope="col">Document</th>
+              <th scope="col">Person</th>
+              <th scope="col" class="num">Start by</th>
+              <th scope="col">Status</th>
             </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
-  </section>
+          </thead>
+          <tbody>
+            <% dated.each do |document| %>
+              <tr>
+                <td><%= link_to document.title, document_path(document) %></td>
+                <td class="note"><%= document.member.name %></td>
+                <td class="num"><%= document.start_by&.strftime("%-d %b %Y") || "—" %></td>
+                <td><%= status_tag(document) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  <% end %>
+
+  <% if @stored.any? %>
+    <section>
+      <h2>Stored, nothing to watch</h2>
+      <p class="note">
+        These do not expire. They are here so you can reach them from anywhere —
+        which is most of what a vault is for.
+      </p>
+      <ul class="docs">
+        <% @stored.first(6).each do |document| %>
+          <li>
+            <%= link_to document.title, document_path(document) %>
+            <span class="note">· <%= document.member.name %></span>
+          </li>
+        <% end %>
+      </ul>
+      <p><%= link_to "Browse all #{pluralize(@documents.size, "document")}", documents_path %></p>
+    </section>
+  <% end %>
 <% end %>
 
 <% if PushSubscription.configured? %>
@@ -108,7 +143,8 @@
     <%= household.document_limit.infinite? ? "unlimited" : household.document_limit %>
   </p>
   <p>
-    <%= link_to "Manage people", members_path %>
+    <%= link_to "Browse the vault", documents_path %>
+    &middot; <%= link_to "Manage people", members_path %>
     <% if household.can_add_document? %>
       &middot; <%= link_to "Add a document", new_document_path %>
     <% end %>
