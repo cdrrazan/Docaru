@@ -29,8 +29,14 @@ and Cable — and the test suite creates a set per parallel worker.
 `bin/rails db:seed` builds a household holding every state the dashboard can reach, because an empty
 dashboard demonstrates nothing:
 
+Six of the thirteen never expire — which is roughly what a real drawer looks like, and the reason the
+vault exists:
+
 | Document | State |
 |---|---|
+| Citizenship certificate, degree, transcript | **stored** — no expiry, no reminders |
+| Birth certificate, marriage certificate | **stored** |
+| Land deed (*lalpurja*) | **stored** |
 | Passport, from the UK | on track |
 | Passport, from the UK | start now |
 | Police clearance, from the UK | **overdue** — the day to start was a month ago |
@@ -42,9 +48,9 @@ dashboard demonstrates nothing:
 Sign in as `demo@renewaru.test` / `demo-password-change-me`. Seeds run only in development and test,
 are idempotent, and are dated relative to today so they never go stale.
 
-The last two rows are the ones to look at. Nepal will not renew a vehicle registration without
-current insurance; both dates look survivable in isolation, and the renewal is blocked before it
-starts. That is what a product storing only expiry dates cannot tell you.
+The stored rows are the product: documents somebody needs at short notice and cannot reach. The last
+two are what the renewal layer adds — Nepal will not renew a vehicle registration without current
+insurance, both dates look survivable in isolation, and the renewal is blocked before it starts.
 
 ## Tests
 

@@ -2,7 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What this is
+## What this is, in one paragraph
+
+**A self-hosted, browser-encrypted vault for a household's documents, which also knows when the ones
+with deadlines need renewing.** Storage is the product: most of what a household keeps — a degree
+certificate, a birth certificate, a land deed — never expires at all, and exists in here so it can be
+reached from another city rather than from a drawer. The renewal engine is the layer on top, and it
+is what makes the vault worth opening rather than the reason it exists. If you find yourself treating
+an expiry date as mandatory, or the dataset as the point, that is the bug — see the git history for
+the commit that inverted it back.
 
 Two things in one repository, deliberately kept apart:
 
@@ -110,6 +118,16 @@ explicitly, not autoloaded, because Rails does not own it.
 - **`Document`** — the private-plane record. `kind`/`issuing_country`/`expires_on` are stored in the clear
   because the server must compute dates; `identifier` and `notes` are `encrypts`ed. `status`/`severity`
   drive dashboard ordering and deliberately mirror `RenewalCalculation#status`.
+  **`expires_on` is nullable and that is load-bearing.** A document without one is `:stored` — a
+  finished state, not a missing field — and it is the majority case. `:stored` and `:unknown` are
+  different answers: `:unknown` means it expires and no rule exists, `:stored` means there is nothing
+  to watch and never will be. Anything reading `expires_on` must handle nil; `ReminderSchedule`,
+  `PrerequisiteChain` and `sort_key` each do so explicitly.
+- **`DocumentsController#index`** — the vault: browse and search by label, kind, country or person,
+  grouped by person. Search deliberately excludes `identifier` and `notes`, which are encrypted so the
+  server cannot read them; the limit is stated in the UI rather than left as a query that never matches.
+  The dashboard answers "what needs doing"; this answers "where is Aama's citizenship certificate",
+  and for the documents that never expire only the second question is ever asked.
 - **`ReminderSchedule`** — derived on every sweep, never persisted, so correcting an expiry date reshapes
   all future alerts with no backfill. Five stages anchored to `start_by`, cascading *past* it (the failure
   mode is procrastination, not amnesia); a `FALLBACK` expiry-anchored set when no rule exists.
@@ -156,6 +174,11 @@ Authorisation is by scoping: `Authentication#household` establishes the scope on
   `noindex` because there is one URL per expiry date.
 - `db/seeds.rb` is guarded to `Rails.env.local?`. `db:prepare` runs seeds on a fresh database and the Docker
   entrypoint runs `db:prepare`, so an unguarded seed plants a known password on every new instance.
+  Its proportions are deliberate — six of thirteen documents have no expiry, because that is what a real
+  drawer looks like and the demo argues the product's thesis by being shaped correctly.
+- Self-hosting is the default deployment, not a credibility signal. The reason somebody chooses this over
+  Drive is that nobody else can read it, so anything that assumes a hosted instance — a required external
+  service, a phone-home, a feature that degrades without an account — undercuts the whole proposition.
 - Playbook pages are server-rendered with no client-side rendering, because organic search is the
   acquisition channel and a crawler cannot read a client-rendered page.
 - Comments in this codebase explain *why*, often at length. Match that when editing; do not strip them.

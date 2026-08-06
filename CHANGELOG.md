@@ -7,6 +7,28 @@ Notable changes, newest first. Rule data corrections are not listed individually
 
 Everything so far. Nothing is released yet, and the dataset is entirely unverified.
 
+### Repositioned: the vault is the product
+
+The application began as a renewal-deadline tracker that happened to store documents. It is now an
+encrypted, self-hosted document vault that happens to know about renewal deadlines. The difference is
+not cosmetic — it changed what the software will accept:
+
+- **`expires_on` is optional.** It was required, which meant a degree certificate, a birth
+  certificate, a marriage certificate, a transcript and a property deed were all literally
+  unstorable. That is most of what a household keeps, and all of what somebody needs at short notice
+  from the wrong city. A document without an expiry is `:stored` — a finished state, distinct from
+  `:unknown`, which means it *does* expire and no rule exists for it.
+- **Document kinds are open.** The dataset's enum stays closed so the app never meets a kind it has
+  no renewal UI for, but refusing to store a transcript because nobody has written a renewal rule for
+  transcripts was the tail wagging the dog.
+- **There is a vault to browse.** Previously there was no document index at all — the dashboard was
+  the list, ranked by urgency. That is the right shape for a deadline tracker and useless for finding
+  one certificate, which is the actual daily use. Search covers label, kind, country and person, and
+  deliberately not the encrypted fields.
+- **The dashboard has two zones.** "Needs you" holds only documents that can want something; a vault
+  is mostly documents that want nothing, and listing a birth certificate under "needs attention"
+  would teach people to skim past the part that matters.
+
 ### The dataset
 
 - `RenewalRule` schema with renewal windows, split processing times, prerequisite lead times, cost,
