@@ -1,63 +1,80 @@
 <div align="center">
 
-# Renewal rules
+# Renewaru
 
-**Every document you own has a deadline.**
-**This is the open dataset that says which one is next — and exactly what to do about it.**
+**A self-hosted vault for the documents you will not put in Google Drive —**
+**that also tells you when the ones with deadlines need renewing.**
 
 [![Validate rules](https://github.com/cdrrazan/Renewaru/actions/workflows/validate.yml/badge.svg)](https://github.com/cdrrazan/Renewaru/actions/workflows/validate.yml)
 [![App](https://github.com/cdrrazan/Renewaru/actions/workflows/app.yml/badge.svg)](https://github.com/cdrrazan/Renewaru/actions/workflows/app.yml)
 [![Data: CC BY 4.0](https://img.shields.io/badge/data-CC%20BY%204.0-0a7d55)](LICENSE)
 [![Code: MIT](https://img.shields.io/badge/code-MIT-0a7d55)](LICENSE)
-[![Playbooks](https://img.shields.io/badge/playbooks-21-1c5d4a)](rules/)
-[![Verified](https://img.shields.io/badge/verified-0%20of%2021-b45309)](#status)
+[![Self-hosted](https://img.shields.io/badge/self--hosted-docker%20compose-1c5d4a)](#self-hosting)
+[![Encryption](https://img.shields.io/badge/scans-encrypted%20in%20browser-1c5d4a)](#how-the-encryption-works)
+[![Renewal rules](https://img.shields.io/badge/renewal%20rules-21%20playbooks-1c5d4a)](rules/)
 
-[Use cases](#use-cases) · [Quick start](#quick-start) · [The one number](#the-one-number-this-exists-to-compute) · [Architecture](#two-data-planes) · [Contributing](#helping) · [Security](SECURITY.md)
+[Use cases](#use-cases) · [Quick start](#quick-start) · [Encryption](#how-the-encryption-works) · [Renewals](#the-renewal-layer) · [Architecture](#two-data-planes) · [Contributing](#helping) · [Security](SECURITY.md)
 
 </div>
 
 ---
 
-A calendar reminder tells you a passport expires on 14 March. It does not tell you to start in
-November, because renewing from abroad takes ten weeks and needs a police certificate you have not
-ordered yet.
+Your degree certificate, your citizenship certificate, the land deed, your family's papers. Scanned,
+sitting in a folder on a laptop you are not currently near — or in a drawer thirty kilometres away.
+You will not upload them to Google Drive, and when you actually need one, you cannot reach it.
 
-**The failure is not memory. It is lead time and process ignorance** — and that is what this fixes.
+**That is the problem. Storage is the job.**
+
+Some of those documents also expire, and the renewals are their own trap: a calendar reminder says
+*"passport expires 14 March"* and by the time it fires the fourteen weeks you needed are gone. So the
+vault knows the renewal process too — but that is the layer on top, not the reason it exists.
 
 <table>
 <tr><td width="50%" valign="top">
 
-**A calendar app knows**
+### 🔒 What it is
 
-```
-Passport expires
-14 March 2027
-```
+An encrypted vault you host yourself.
 
-Correct, and useless. By the time it fires,
-the fourteen weeks you needed are gone.
+Scans are encrypted **in your browser**, with a
+passphrase that never reaches the server. It
+stores ciphertext and holds no key — so a
+breach, a backup, or a court order gets bytes.
+
+Your household shares it. Your family's papers
+stop being thirty kilometres away.
 
 </td><td width="50%" valign="top">
 
-**This knows**
+### 📅 What it also does
+
+Most documents never expire. **Those are just
+stored** — no reminders, nothing to chase.
+
+For the ones that do, it works backwards from
+the real renewal process:
 
 ```
-Start by 14 September 2026
+Passport expires   14 Mar 2027
+Start by           14 Sep 2026
 ├── 90d  citizenship certificate
 ├── 70d  processing (worst case)
 └── 21d  buffer
 ```
 
-Six months earlier. Actionable.
-
 </td></tr>
 </table>
+
+> **Why not Drive, Dropbox or iCloud?** They can read your files. That is not a flaw in them; it is
+> how they work. A passport scan, a land deed and a medical record are exactly the documents where
+> that matters, and "we promise not to look" is a different guarantee from "we cannot".
 
 ## Contents
 
 - [Use cases](#use-cases)
-- [Quick start](#quick-start)
-- [The one number this exists to compute](#the-one-number-this-exists-to-compute)
+- [Quick start](#quick-start) · [Self-hosting](#self-hosting)
+- [How the encryption works](#how-the-encryption-works)
+- [The renewal layer](#the-renewal-layer)
 - [Status](#status)
 - [What the application does](#what-the-application-does)
 - [How a rule works](#how-a-rule-works)
@@ -71,21 +88,24 @@ Six months earlier. Actionable.
 
 | You want to… | Start here |
 |---|---|
-| **Check one document, right now** | [`examples/ruby/start_date.rb`](examples/ruby/start_date.rb) — one command, no setup |
-| **Build something on the data** | [`examples/`](examples/README.md) — runnable consumers in Ruby, Python, JS and jq |
-| **Watch your family's documents** | [Quick start](#quick-start) → the app, with a [demo household](web/README.md#the-demo) |
-| **Run it for yourself, privately** | [Self-hosting](#self-hosting) — one `docker compose up`, your own machine |
+| **Keep documents somewhere only you can read** | [Self-hosting](#self-hosting) — one `docker compose up`, your machine, your keys |
+| **Reach your family's papers from another city** | [Quick start](#quick-start) — one household, everyone's documents, [demo included](web/README.md#the-demo) |
+| **Understand what the server can and cannot see** | [SECURITY.md](SECURITY.md) — precise, including what it deliberately does *not* protect |
+| **Know when something needs renewing** | [The renewal layer](#the-renewal-layer) — worked out from the real process, not the expiry date |
+| **Check one renewal without an account** | [`examples/ruby/start_date.rb`](examples/ruby/start_date.rb) — one command, no setup, nothing stored |
+| **Build on the open renewal data** | [`examples/`](examples/README.md) — runnable consumers in Ruby, Python, JS and jq |
 | **Understand the data format** | [SCHEMA.md](SCHEMA.md) — every field, and why it exists |
-| **Fix a wrong figure** | [CONTRIBUTING.md](CONTRIBUTING.md) — edit one YAML file, no toolchain |
-| **Verify a draft rule** | [Claim one](../../issues/new?template=verify-a-rule.md) — the most useful thing anyone can do here |
-| **Know what a breach would expose** | [SECURITY.md](SECURITY.md) — precise about what is and is not protected |
+| **Fix or verify a renewal figure** | [Claim one](../../issues/new?template=verify-a-rule.md) · [CONTRIBUTING.md](CONTRIBUTING.md) — no toolchain needed |
 
 ### Who it is for
 
-Anyone running a deadline in a country that is not the one issuing the document: migrants, work-visa
-holders, international students, and people managing a parent's paperwork from abroad. Two or three
-jurisdictions in parallel is the case no other product handles, and it is the case where a missed
-deadline costs legal status rather than a late fee.
+Anyone whose important paperwork is scattered across a laptop, a drawer and somebody else's house —
+and who would rather not hand scans of it to a company that can read them.
+
+It is sharpest for households split across countries: migrants, work-visa holders, international
+students, and people managing a parent's documents from abroad. That is also where the renewal layer
+earns its place, because two or three jurisdictions in parallel is the case no other product handles
+and the one where a missed deadline costs legal status rather than a late fee.
 
 ## Quick start
 
@@ -94,7 +114,20 @@ Needs Ruby 3.3, and MySQL 8.0+ or MariaDB 10.6+ for the application.
 <table>
 <tr><td valign="top" width="50%">
 
-**Just the data** — no database, no gems
+**The vault** — the actual product
+
+```sh
+cd web
+bin/setup --skip-server
+bin/rails db:seed     # a real drawer
+bin/rails server
+```
+
+`demo@renewaru.test` / `demo-password-change-me`
+
+</td><td valign="top" width="50%">
+
+**Just the renewal data** — no database, no gems
 
 ```sh
 ruby bin/validate     # check every rule
@@ -103,31 +136,23 @@ ruby examples/ruby/start_date.rb \
   NP passport GB 2027-03-14
 ```
 
-</td><td valign="top" width="50%">
-
-**The whole application**
-
-```sh
-cd web
-bin/setup --skip-server
-bin/rails db:seed     # a household in trouble
-bin/rails server
-```
-
-`demo@renewaru.test` / `demo-password-change-me`
-
 </td></tr>
 </table>
 
-The seeded household holds every state the dashboard can reach. Two rows are the ones to look at:
+The seeded household is proportioned like a real drawer — **six of its thirteen documents never
+expire at all**: a citizenship certificate, a degree, a transcript, a birth certificate, a marriage
+certificate, a land deed. They are simply stored, generate no reminders, and are the reason the vault
+exists.
+
+The seven that *do* expire cover every state the dashboard can reach. Two of them are the pair worth
+looking at:
 
 > **Third-party insurance** — expired a fortnight ago
 > **Vehicle registration** — due in two months, and **blocked**, because Nepal will not renew one
 > without the other
 
-Both dates look survivable on their own. The renewal is already blocked. That is the failure a
-product storing only expiry dates cannot see, and it is why this one stores renewal *process*
-instead. Full setup notes, including the database grant, are in [`web/README.md`](web/README.md).
+Both dates look survivable on their own. The renewal is already blocked. Full setup notes, including
+the database grant, are in [`web/README.md`](web/README.md).
 
 ### Self-hosting
 
@@ -148,7 +173,44 @@ attachments, and neither is much use without the other.
 > application has been exercised against a real MySQL server; the image around it has not. Build it
 > once locally before pointing a domain at it. See [CHANGELOG.md](CHANGELOG.md).
 
-## The one number this exists to compute
+## How the encryption works
+
+The server never has the key. That is not a policy, it is an architecture — there is no code path
+that could decrypt an attachment, and none can be added without breaking the tests that guard it.
+
+```mermaid
+flowchart LR
+    pass(["Your passphrase<br/><i>never sent</i>"]) -->|PBKDF2| key(["AES-GCM key<br/><i>lives in the tab</i>"])
+    scan(["Passport scan"]) --> enc["Encrypt in browser"]
+    key --> enc
+    enc -->|ciphertext + nonce| server[("Server<br/><i>opaque bytes</i>")]
+    server -.->|"cannot decrypt"| x(["✗"])
+    server -->|ciphertext| dec["Decrypt in browser"]
+    key --> dec
+    dec --> view(["You read it"])
+
+    style pass fill:#e8f4ee,stroke:#8fc3aa
+    style key fill:#e8f4ee,stroke:#8fc3aa
+    style server fill:#fdf6e3,stroke:#d9c47a
+    style x fill:#fbeeee,stroke:#dda9a9
+```
+
+| | |
+|---|---|
+| **Encrypted in the browser** | The scans themselves. AES-GCM, key derived from a passphrase that is never transmitted. |
+| **Encrypted at rest** | Document numbers and free-text notes. |
+| **Stored in the clear** | Kind, issuing country, expiry date, names. The server must compute renewal dates and cannot do that over ciphertext. |
+
+That last row is a real trade and [SECURITY.md](SECURITY.md) states it plainly: a database breach
+reveals *that someone holds a Nepali passport expiring in March*. It does not reveal the passport.
+
+> **Lose the passphrase and the scans are gone.** There is no recovery, because a recovery path the
+> operator can walk is one an attacker or a court order can walk too.
+
+## The renewal layer
+
+Most documents in a vault never expire, and those are simply stored. For the ones that do, this is
+what the open dataset in [`rules/`](rules/) is for:
 
 ```
 start_by = expires_on − processing.worst_case − slowest prerequisite − buffer
@@ -220,14 +282,25 @@ is the most valuable contribution available.
 
 ## What the application does
 
+**The vault**
+
 | | |
 |---|---|
+| **Encrypted storage** | Scans encrypted in the browser before upload. The server holds ciphertext and no key. |
+| **Anything worth keeping** | Degrees, transcripts, birth and marriage certificates, deeds, contracts. **An expiry date is optional** — most documents do not have one. |
+| **A household, not an account** | Everyone's documents in one place, so a parent's papers are not thirty kilometres away. |
+| **Findable** | Browse and search by label, kind, country or person. Encrypted fields are deliberately not searchable. |
+| **Yours** | One `docker compose up` on your own machine. No cloud account required, ever. |
+
+**The renewal layer, for the documents that expire**
+
+| | |
+|---|---|
+| **Reminder cascade** | Anchored to the start date rather than the expiry date, swept nightly, by email and web push. |
+| **Prerequisite chains** | Warns when one document lapsing will block another's renewal. |
 | **Playbooks** | Every rule rendered per origin. Server-rendered, no account, crawlable. |
 | **Start-date calculator** | Anonymous, nothing stored, the question in the URL so answers can be pasted into a forum thread. |
-| **Reminder cascade** | Anchored to the start date, swept nightly, by email and web push. |
-| **Prerequisite chains** | Warns when one document lapsing will block another's renewal. |
 | **MRZ reading** | From a camera or pasted, with check-digit validation — a misread is caught, not stored as somebody's expiry date. |
-| **Encrypted vault** | Scans encrypted in the browser. The server holds ciphertext and no key. |
 | **Installable, offline** | Playbooks cached for a consulate queue or a plane. Public pages only; nothing behind a login touches disk. |
 
 ## How a rule works
@@ -317,8 +390,9 @@ whole thing rests on.
 | [`web/`](web/) | The Rails 8 application — [its own README](web/README.md) |
 | [`renewal-vault-spec.md`](renewal-vault-spec.md) | The product spec the code comments cite by section |
 
-`rules/` sits at the top because it is the public artefact. Somebody correcting a renewal date should
-never have to learn that the application exists.
+`rules/` sits at the top of the repository rather than inside `web/` because it is the one part of
+this that is published. Somebody correcting a renewal fee should never have to learn that a Rails
+application exists — and nothing in `rules/` has ever seen a user's document.
 
 ## Helping
 
