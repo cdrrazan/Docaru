@@ -43,6 +43,12 @@ class ReminderSchedule
   def anchored? = document.start_by.present?
 
   def entries
+    # A document with no expiry date has nothing to remind anybody about, and
+    # that is the normal case for most of a vault — a degree certificate is not
+    # a deadline that has gone missing. Silence here is correct; inventing a
+    # date to alert on would be the bug.
+    return [] unless document.dated?
+
     anchor = document.start_by
     return fallback_entries unless anchor
 

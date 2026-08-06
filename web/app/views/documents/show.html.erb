@@ -3,21 +3,26 @@
 <p class="eyebrow"><%= @document.member.display_name %></p>
 <h1><%= @document.title %></h1>
 
-<section class="answer <%= "answer-warn" unless @document.status == :ahead %>">
-  <p class="eyebrow">When to start</p>
+<section class="answer <%= "answer-warn" if @document.needs_attention? %>">
+  <p class="eyebrow"><%= @document.dated? ? "When to start" : "In your vault" %></p>
   <p class="headline"><%= status_headline(@document) %></p>
   <p><%= document_verdict(@document) %></p>
 </section>
 
-<% if @resolved.nil? %>
-  <div class="banner banner-warn">
-    <strong>No renewal rule for this document yet.</strong>
-    We can only remind you before it expires, not tell you when to start — that needs a rule for
-    <%= country_title(@document.issuing_country) %>. The dataset is open and grows one verified rule
-    at a time.
-  </div>
-<% else %>
-  <%= render "shared/draft_banner", resolved: @resolved %>
+<%# Only a document with a deadline can be missing renewal guidance. Telling %>
+<%# somebody we have no renewal rule for their birth certificate would be %>
+<%# answering a question they did not ask. %>
+<% if @document.dated? %>
+  <% if @resolved.nil? %>
+    <div class="banner banner-warn">
+      <strong>No renewal rule for this document yet.</strong>
+      We can only remind you before it expires, not tell you when to start — that needs a rule for
+      <%= country_title(@document.issuing_country) %>. The dataset is open and grows one verified rule
+      at a time.
+    </div>
+  <% else %>
+    <%= render "shared/draft_banner", resolved: @resolved %>
+  <% end %>
 <% end %>
 
 <section>
@@ -27,7 +32,9 @@
       <tbody>
         <tr>
           <td>Expires</td>
-          <td class="num"><%= @document.expires_on.strftime("%-d %b %Y") %></td>
+          <td class="num">
+            <%= @document.dated? ? @document.expires_on.strftime("%-d %b %Y") : "Does not expire" %>
+          </td>
         </tr>
         <% if @document.start_by %>
           <tr class="total">
@@ -65,6 +72,16 @@
 
 <%= render "vault", document: @document %>
 
+<% if @schedule.entries.empty? %>
+  <section>
+    <h2>When we will contact you</h2>
+    <p class="note">
+      Never, for this one. It has no expiry date, so there is nothing to remind you about — it is
+      here to be found, not to be chased.
+      <%= link_to "Add an expiry date", edit_document_path(@document) %> if that is wrong.
+    </p>
+  </section>
+<% else %>
 <section>
   <h2>When we will contact you</h2>
   <p class="note">
@@ -101,6 +118,7 @@
     </table>
   </div>
 </section>
+<% end %>
 
 <p style="margin-top:2rem">
   <% if @document.rule %>

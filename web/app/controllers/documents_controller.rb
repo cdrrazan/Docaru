@@ -3,6 +3,29 @@
 class DocumentsController < ApplicationController
   before_action :set_document, only: %i[show edit update destroy]
 
+  # The vault itself: everything the household holds, findable rather than
+  # ranked. Most of what is in here never expires and will never appear on the
+  # dashboard, which is exactly why this screen has to exist — somebody in
+  # another city looking for one certificate should not have to reason about
+  # deadlines to find it.
+  def index
+    @query = params[:q].to_s.strip
+    @member = household.members.find_by(id: params[:member_id])
+
+    # Attachments are eager-loaded because the list shows a page count per row,
+    # and this is the one screen guaranteed to hold every document a household
+    # has.
+    scope = household.documents.includes(:member, :attachments)
+    scope = scope.matching(@query) if @query.present?
+    scope = scope.where(member_id: @member.id) if @member
+
+    # Alphabetical within each person rather than by urgency. This is a filing
+    # cabinet on purpose; the queue is next door.
+    @documents = scope.to_a.sort_by { |doc| [ doc.member.name, doc.title.downcase ] }
+    @members = household.members.ordered
+    @total = household.documents.count
+  end
+
   def show
     @resolved = @document.resolved
     @timeline = @document.timeline
@@ -74,6 +97,11 @@ class DocumentsController < ApplicationController
   # Confirming the saved deadline immediately is the moment the product proves
   # itself: the user typed an expiry date and got back a date to act on.
   def start_notice(document)
+    unless document.dated?
+      return "Stored. No expiry date, so nothing to remind you about — add its scans and you can " \
+             "reach it from anywhere."
+    end
+
     return "Saved. We have no renewal rule for that document yet, so we will remind you before it expires." unless document.timeline
 
     case document.status

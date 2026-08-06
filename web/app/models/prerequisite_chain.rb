@@ -24,7 +24,10 @@ class PrerequisiteChain
 
   def links
     @links ||= begin
-      resolved = document.resolved
+      # A dependency only bites when there is a renewal to block. A stored
+      # document with no expiry is never being renewed, so nothing can be in
+      # its way.
+      resolved = document.dated? ? document.resolved : nil
       resolved ? resolved.prerequisite_rules.map { |ref| build_link(ref) } : []
     end
   end
@@ -63,6 +66,12 @@ class PrerequisiteChain
     return :missing unless prerequisite
 
     needed_by = document.start_by || document.expires_on
+
+    # Held, but with no expiry recorded — so we know it exists and cannot say
+    # whether it will still be valid. Reported as its own state rather than
+    # waved through as `:ok`, because "we have no idea" and "you are fine" are
+    # different things to tell somebody planning a renewal.
+    return :undated unless prerequisite.dated?
 
     # The prerequisite lapses before the dependent renewal even begins, so the
     # renewal is blocked before it starts.

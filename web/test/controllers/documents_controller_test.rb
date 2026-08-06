@@ -42,14 +42,31 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/no renewal rule/i, flash[:notice])
   end
 
-  test "rejects a document with no expiry date" do
-    assert_no_difference "Document.count" do
+  # A degree certificate, a birth certificate and a deed have no expiry date,
+  # and they are most of what a household actually needs to reach from another
+  # city. Requiring one made every single one of them unstorable.
+  test "stores a document that has no expiry date" do
+    assert_difference "Document.count", 1 do
       post documents_path, params: { document: {
-        member_id: members(:rajan).id, kind: "passport", issuing_country: "NP", expires_on: ""
+        member_id: members(:rajan).id, kind: "degree_certificate", issuing_country: "NP", expires_on: ""
       } }
     end
 
-    assert_response :unprocessable_entity
+    document = Document.order(:created_at).last
+
+    assert_nil document.expires_on
+    assert_equal :stored, document.status
+    assert_match(/nothing to remind you/i, flash[:notice])
+  end
+
+  test "a stored document generates no reminders at all" do
+    document = members(:rajan).documents.create!(
+      kind: "birth_certificate", issuing_country: "NP"
+    )
+
+    assert_empty document.schedule.entries
+    assert_empty document.chain.links
+    assert_not document.needs_attention?
   end
 
   # A member id belonging to somebody else must not become a way to write into

@@ -19,11 +19,10 @@
   <div class="field">
     <%= form.label :kind, "What is it?" %>
     <p class="hint">
-      Only documents we hold a renewal rule for can be given a start-by date. Anything else still
-      gets expiry reminders.
+      Anything you would rather not lose. The first group has a public renewal rule behind it, so we
+      can work out when to start renewing; everything else is simply kept safe and reachable.
     </p>
-    <%= form.select :kind,
-          RuleCatalog.rules.sort_by(&:title).map { |rule| [ rule.title, rule.document_kind, { "data-country" => rule.country_code } ] },
+    <%= form.select :kind, document_kind_options(document.kind),
           { include_blank: "Choose a document…" }, required: true %>
   </div>
 
@@ -47,8 +46,12 @@
   </div>
 
   <div class="field">
-    <%= form.label :expires_on, "Expiry date" %>
-    <%= form.date_field :expires_on, required: true %>
+    <%= form.label :expires_on, "Expiry date (leave blank if it never expires)" %>
+    <p class="hint">
+      A degree certificate, a birth certificate or a deed has no expiry — leave this empty and it is
+      stored without any reminders. Fill it in and we work backwards to the date you have to start.
+    </p>
+    <%= form.date_field :expires_on %>
   </div>
 
   <div class="field">
