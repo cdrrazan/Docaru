@@ -15,9 +15,9 @@ class RuleCatalog
     # refresh; cached everywhere else, because parsing the whole dataset on each
     # request would be silly.
     def dataset
-      return Renewaru::Dataset.load if Rails.env.development?
+      return Docaru::Dataset.load if Rails.env.development?
 
-      @dataset ||= Renewaru::Dataset.load
+      @dataset ||= Docaru::Dataset.load
     end
 
     def reload!
@@ -57,7 +57,7 @@ class RuleCatalog
 
     # A rule seen from one place. `context` is either "domestic" or the ISO code
     # of the country the applicant is applying from.
-    def resolve(country_code, document_kind, context = Renewaru::Rule::Context::DOMESTIC)
+    def resolve(country_code, document_kind, context = Docaru::Rule::Context::DOMESTIC)
       rule = find!(country_code, document_kind)
       normalised = normalise_context(rule, context)
       rule.resolve(normalised)
@@ -68,19 +68,19 @@ class RuleCatalog
     # give someone abroad a date that is months too late.
     def normalise_context(rule, context)
       value = context.to_s
-      return Renewaru::Rule::Context::DOMESTIC if value.blank? || value.casecmp?("domestic")
+      return Docaru::Rule::Context::DOMESTIC if value.blank? || value.casecmp?("domestic")
 
       code = value.upcase
       return code if rule.origins.include?(code)
-      return code if Renewaru::Countries::NAMES.key?(code)
+      return code if Docaru::Countries::NAMES.key?(code)
 
-      Renewaru::Rule::Context::DOMESTIC
+      Docaru::Rule::Context::DOMESTIC
     end
 
     # Origins we can say something specific about, for the "applying from"
     # selector. Domestic is always first because it is the simple case.
     def origins_for(rule)
-      [ Renewaru::Rule::Context::DOMESTIC, *rule.origins ]
+      [ Docaru::Rule::Context::DOMESTIC, *rule.origins ]
     end
   end
 end

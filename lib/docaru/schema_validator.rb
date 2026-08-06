@@ -2,7 +2,7 @@
 
 require "json"
 
-module Renewaru
+module Docaru
   # A small JSON Schema (2020-12) validator covering the subset the RenewalRule
   # schema actually uses.
   #

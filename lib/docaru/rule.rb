@@ -3,7 +3,7 @@
 require "yaml"
 require "date"
 
-module Renewaru
+module Docaru
   # One rule file, plus the resolution of its per-origin overrides.
   class Rule
     attr_reader :data, :path

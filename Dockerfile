@@ -74,7 +74,7 @@ FROM base
 
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
-COPY --from=build /lib/renewaru /lib/renewaru
+COPY --from=build /lib/docaru /lib/docaru
 COPY --from=build /rules /rules
 
 # Non-root, and owning only what it must be able to write.

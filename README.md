@@ -347,7 +347,7 @@ flowchart LR
 
     subgraph public["🌍 Public plane — versioned, no user data"]
         direction TB
-        rules["rules/*.yml"] --> lib["lib/renewaru<br/><i>no gems, no network</i>"]
+        rules["rules/*.yml"] --> lib["lib/docaru<br/><i>no gems, no network</i>"]
         lib --> bundle["site/rules.json<br/>+ static playbooks"]
     end
 
@@ -384,7 +384,7 @@ whole thing rests on.
 |---|---|
 | [`rules/`](rules/) | The dataset — YAML, one file per country × document |
 | [`schema/`](schema/) | The `RenewalRule` contract (JSON Schema 2020-12) |
-| [`lib/`](lib/renewaru/) | Loader, timeline arithmetic, validator. No gems, no network. |
+| [`lib/`](lib/docaru/) | Loader, timeline arithmetic, validator. No gems, no network. |
 | [`bin/`](bin/) | [`validate`](bin/validate) and [`build`](bin/build) |
 | [`examples/`](examples/) | Runnable consumers in four languages |
 | [`web/`](web/) | The Rails 8 application — [its own README](web/README.md) |

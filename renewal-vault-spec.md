@@ -1,8 +1,10 @@
 # Renewal Vault — product spec v0.1
 
 **Name:** Docaru. The §12 question is settled: the application is the vault, so the name roots on
-the documents rather than on the renewals, which are the layer above. The public renewal-rule dataset
-keeps the `Renewaru` module — that name was only ever wrong for the application.
+the documents rather than on the renewals, which are the layer above. One name for the whole
+repository, including the dataset's `Docaru` namespace — the two planes are a directory boundary,
+not a distribution one, and a second name only asked contributors to learn a distinction that buys
+them nothing.
 
 ---
 

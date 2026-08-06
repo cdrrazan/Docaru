@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Renewaru
+module Docaru
   # ISO 3166-1 alpha-2 to the phrasing a reader would actually use, including
   # the definite article where English wants one ("from the United Kingdom",
   # not "from United Kingdom"). Shared by the static generator and the web app

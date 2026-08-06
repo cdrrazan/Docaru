@@ -9,13 +9,13 @@
 # closest reading of the data available: Dataset.load parses rules/ directly,
 # so a rule edited a second ago is a rule this sees.
 
-require_relative "../../lib/renewaru/dataset"
+require_relative "../../lib/docaru/dataset"
 require "date"
 
 country, kind, origin, expires_on = ARGV
 abort "usage: start_date.rb <COUNTRY> <DOCUMENT_KIND> <FROM|domestic> <YYYY-MM-DD>" unless expires_on
 
-dataset = Renewaru::Dataset.load
+dataset = Docaru::Dataset.load
 
 rule = dataset.rules.find do |r|
   r.country_code == country.upcase && r.document_kind == kind.tr("-", "_")
@@ -25,7 +25,7 @@ abort "No rule for #{country}/#{kind}. Known: #{dataset.rules.map(&:slug).join("
 # An origin with no override still resolves — it falls back to the generic
 # abroad timings. Falling back to *domestic* instead would hand somebody abroad
 # a date months too late, which is the failure mode worth knowing about.
-context = origin.casecmp?("domestic") ? Renewaru::Rule::Context::DOMESTIC : origin.upcase
+context = origin.casecmp?("domestic") ? Docaru::Rule::Context::DOMESTIC : origin.upcase
 resolved = rule.resolve(context)
 timeline = resolved.timeline
 

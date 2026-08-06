@@ -8,10 +8,10 @@
 
 require "minitest/autorun"
 require "yaml"
-require_relative "../lib/renewaru/dataset"
+require_relative "../lib/docaru/dataset"
 
-SCHEMA = Renewaru::SchemaValidator.from_file(
-  File.join(Renewaru::ROOT, "schema", "renewal-rule.schema.json")
+SCHEMA = Docaru::SchemaValidator.from_file(
+  File.join(Docaru::ROOT, "schema", "renewal-rule.schema.json")
 )
 
 VALID = YAML.safe_load(<<~YAML, permitted_classes: [Date], aliases: false)
@@ -37,7 +37,7 @@ VALID = YAML.safe_load(<<~YAML, permitted_classes: [Date], aliases: false)
 YAML
 
 def rule_with(overrides)
-  Renewaru::Rule.new(Renewaru::Rule.normalise(VALID.merge(overrides)))
+  Docaru::Rule.new(Docaru::Rule.normalise(VALID.merge(overrides)))
 end
 
 def errors_for(overrides)
@@ -236,7 +236,7 @@ describe "timeline arithmetic" do
 end
 
 describe "the shipped dataset" do
-  let(:dataset) { Renewaru::Dataset.load }
+  let(:dataset) { Docaru::Dataset.load }
 
   it "loads without YAML errors" do
     _(dataset.load_errors).must_be_empty

@@ -3,7 +3,7 @@
 require "cgi"
 require_relative "countries"
 
-module Renewaru
+module Docaru
   # Renders one resolved rule as a standalone HTML page.
   #
   # Server-rendered, no JavaScript, no external requests. That is a deliberate

@@ -45,7 +45,7 @@ class PlaybooksController < ApplicationController
   # with a junk origin, wrong for a URL, where it silently served the domestic
   # page at 676 addresses per document and asked crawlers to sort out which of
   # them was the real one.
-  def unknown_origin? = origin.present? && !Renewaru::Countries::NAMES.key?(origin)
+  def unknown_origin? = origin.present? && !Docaru::Countries::NAMES.key?(origin)
 
   def head_unknown_origin
     render "shared/not_found", status: :not_found

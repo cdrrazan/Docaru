@@ -33,7 +33,7 @@
       <tr>
         <td style="padding:.4rem 0; color:#5c5c56; border-top:1px solid #e2e2dc;">Applying</td>
         <td style="padding:.4rem 0; text-align:right; border-top:1px solid #e2e2dc;">
-          <%= @resolved.domestic? ? "in #{Renewaru::Countries.title(@document.issuing_country)}" : "from #{Renewaru::Countries.title(@resolved.context)}" %>
+          <%= @resolved.domestic? ? "in #{Docaru::Countries.title(@document.issuing_country)}" : "from #{Docaru::Countries.title(@resolved.context)}" %>
         </td>
       </tr>
     </table>

@@ -58,7 +58,7 @@ class RuleCatalogTest < ActiveSupport::TestCase
   test "origins_for always leads with domestic" do
     rule = RuleCatalog.find("NP", "passport")
 
-    assert_equal Renewaru::Rule::Context::DOMESTIC, RuleCatalog.origins_for(rule).first
+    assert_equal Docaru::Rule::Context::DOMESTIC, RuleCatalog.origins_for(rule).first
   end
 
   test "every shipped rule can be resolved and timed in every context" do

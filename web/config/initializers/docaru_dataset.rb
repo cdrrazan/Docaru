@@ -5,4 +5,4 @@
 # renewal date should never have to know this application exists. It is required
 # explicitly rather than autoloaded for exactly that reason: it does not belong
 # to Rails, and Rails does not own its reloading.
-require Rails.root.join("..", "lib", "renewaru", "dataset").to_s
+require Rails.root.join("..", "lib", "docaru", "dataset").to_s

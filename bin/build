@@ -12,19 +12,19 @@
 
 require "json"
 require "fileutils"
-require_relative "../lib/renewaru/dataset"
-require_relative "../lib/renewaru/playbook"
+require_relative "../lib/docaru/dataset"
+require_relative "../lib/docaru/playbook"
 
 REPO_URL = ENV.fetch("REPO_URL", "https://github.com/cdrrazan/Docaru")
-out = ARGV[0] || File.join(Renewaru::ROOT, "site")
+out = ARGV[0] || File.join(Docaru::ROOT, "site")
 
-dataset = Renewaru::Dataset.load
+dataset = Docaru::Dataset.load
 abort "No rules found. Nothing to build." if dataset.rules.empty?
 
 FileUtils.rm_rf(out)
 FileUtils.mkdir_p(out)
 
-playbooks = dataset.playbooks.map { |r| Renewaru::Playbook.new(r, repo_url: REPO_URL) }
+playbooks = dataset.playbooks.map { |r| Docaru::Playbook.new(r, repo_url: REPO_URL) }
 
 playbooks.each do |playbook|
   dir = File.join(out, playbook.path)
@@ -42,7 +42,7 @@ cards = grouped.sort.map do |country, group|
   rows = group.group_by { |p| p.rule.document_kind }.map do |_, variants|
     rule = variants.first.rule
     links = variants.sort_by { |v| v.resolved.domestic? ? "" : v.resolved.context }.map do |v|
-      label = v.resolved.domestic? ? "In #{Renewaru::Playbook.country_name(country)}" : "From #{Renewaru::Playbook.country_name(v.resolved.context)}"
+      label = v.resolved.domestic? ? "In #{Docaru::Playbook.country_name(country)}" : "From #{Docaru::Playbook.country_name(v.resolved.context)}"
       warn = v.timeline.feasible? ? "" : ' <span class="tag tag-warn">window too short</span>'
       "<li><a href=\"#{v.path}/index.html\">#{CGI.escapeHTML(label)}</a>#{warn}</li>"
     end.join
@@ -51,7 +51,7 @@ cards = grouped.sort.map do |country, group|
     "<div class=\"kind\"><h3>#{CGI.escapeHTML(rule.title)}#{draft}</h3><ul>#{links}</ul></div>"
   end.join("\n")
 
-  "<section class=\"country\"><h2>#{CGI.escapeHTML(Renewaru::Countries.title(country))}</h2>#{rows}</section>"
+  "<section class=\"country\"><h2>#{CGI.escapeHTML(Docaru::Countries.title(country))}</h2>#{rows}</section>"
 end.join("\n")
 
 drafts = dataset.rules.count { |r| r.status == "draft" }
@@ -198,4 +198,4 @@ File.write(File.join(out, "style.css"), <<~CSS)
   .provenance ul { padding-left: 1.1rem; word-break: break-word; }
 CSS
 
-puts "Built #{playbooks.length} playbook page(s) + index into #{out.sub("#{Renewaru::ROOT}/", "")}/"
+puts "Built #{playbooks.length} playbook page(s) + index into #{out.sub("#{Docaru::ROOT}/", "")}/"

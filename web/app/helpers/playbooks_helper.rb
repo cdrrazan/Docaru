@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 module PlaybooksHelper
-  DOMESTIC = Renewaru::Rule::Context::DOMESTIC
+  DOMESTIC = Docaru::Rule::Context::DOMESTIC
 
-  def country_name(code) = Renewaru::Countries.name(code)
-  def country_title(code) = Renewaru::Countries.title(code)
+  def country_name(code) = Docaru::Countries.name(code)
+  def country_title(code) = Docaru::Countries.title(code)
 
   def playbook_path_for(rule, context)
     kind = rule.document_kind.tr("_", "-")

@@ -2,7 +2,7 @@
 
 require "date"
 
-module Renewaru
+module Docaru
   # Turns a resolved rule into the only number the product actually sells:
   # the date you have to start.
   #

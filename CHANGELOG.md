@@ -13,9 +13,12 @@ The application was called Renewaru, which named the layer on top rather than th
 the same inversion the repositioning below corrected in the code. The vault is the product, so the
 name roots on the documents.
 
-The **public renewal-rule dataset keeps the `Renewaru` module** and `lib/renewaru/`. That name was
-never wrong for a renewal-rule dataset; it was only ever wrong as the name of the vault consuming it.
-One name per plane is the intent, not an oversight.
+**One name, including the dataset.** The first pass kept `Renewaru` as the dataset's Ruby namespace,
+on the grounds that it was accurate for a renewal-rule dataset even once it was wrong for the vault.
+That was a distinction worth less than it cost: the two planes are a directory boundary, not a
+distribution one — no separate repository, no gem — so the second name only asked every contributor
+to work out which was which, and left a retired brand sitting in live code. `lib/renewaru/` is now
+`lib/docaru/`, the module is `Docaru`, and `RENEWARU_RULES_DIR` is `DOCARU_RULES_DIR`.
 
 Not a no-op for anyone already running it:
 

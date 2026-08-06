@@ -13,7 +13,7 @@
 
 require "optparse"
 require "uri"
-require_relative "../lib/renewaru/dataset"
+require_relative "../lib/docaru/dataset"
 
 options = { max_age_days: 365, strict: false }
 OptionParser.new do |o|
@@ -25,7 +25,7 @@ OptionParser.new do |o|
   o.on("-h", "--help") { puts o; exit 0 }
 end.parse!
 
-SCHEMA_PATH = File.join(Renewaru::ROOT, "schema", "renewal-rule.schema.json")
+SCHEMA_PATH = File.join(Docaru::ROOT, "schema", "renewal-rule.schema.json")
 
 errors = []
 warnings = []
@@ -40,10 +40,10 @@ rescue URI::InvalidURIError
   false
 end
 
-def rel(path) = path.to_s.sub("#{Renewaru::ROOT}/", "")
+def rel(path) = path.to_s.sub("#{Docaru::ROOT}/", "")
 
-dataset = Renewaru::Dataset.load
-validator = Renewaru::SchemaValidator.from_file(SCHEMA_PATH)
+dataset = Docaru::Dataset.load
+validator = Docaru::SchemaValidator.from_file(SCHEMA_PATH)
 
 dataset.load_errors.each { |path, message| errors << "#{rel(path)}: #{message}" }
 

@@ -5,7 +5,7 @@ require_relative "timeline"
 require_relative "countries"
 require_relative "schema_validator"
 
-module Renewaru
+module Docaru
   ROOT = File.expand_path("../..", __dir__)
 
   # The whole public plane: every rule file, loaded once.
@@ -16,7 +16,7 @@ module Renewaru
     # the self-hosted container puts them beside the app rather than one
     # directory up from it.
     def self.rules_dir
-      ENV.fetch("RENEWARU_RULES_DIR") { File.join(ROOT, "rules") }
+      ENV.fetch("DOCARU_RULES_DIR") { File.join(ROOT, "rules") }
     end
 
     def self.load(dir = rules_dir)

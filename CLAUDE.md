@@ -75,7 +75,7 @@ start_by = expires_on − processing.worst_case − max(obtain_lead_days of prer
 useless for the tail — which is who a missed deadline actually destroys. If you find code anchoring to
 `typical` or to the expiry date, that is a bug.
 
-## Dataset architecture (`lib/renewaru/`)
+## Dataset architecture (`lib/docaru/`)
 
 `Dataset.load` globs `rules/**/*.yml` → `Rule` per file → `rule.resolve(context)` → `Rule::Resolved` →
 `Timeline`.
@@ -109,7 +109,7 @@ fact about the world and the one a reader most needs.
 
 ## Application architecture (`web/`)
 
-`config/initializers/renewaru_dataset.rb` requires `lib/renewaru/dataset` from outside the Rails tree —
+`config/initializers/docaru_dataset.rb` requires `lib/docaru/dataset` from outside the Rails tree —
 explicitly, not autoloaded, because Rails does not own it.
 
 - **`RuleCatalog`** — the only bridge to the dataset. Reloads per call in development, memoised elsewhere.

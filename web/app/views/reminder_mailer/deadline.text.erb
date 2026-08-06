@@ -6,7 +6,7 @@
 Expires:      <%= @document.expires_on.strftime("%-d %B %Y") %>
 Start by:     <%= @document.start_by.strftime("%-d %B %Y") %>
 Lead time:    <%= @timeline.required_lead_days %> days (<%= @timeline.processing_days %> processing, worst case)
-Applying:     <%= @resolved.domestic? ? "in #{Renewaru::Countries.title(@document.issuing_country)}" : "from #{Renewaru::Countries.title(@resolved.context)}" %>
+Applying:     <%= @resolved.domestic? ? "in #{Docaru::Countries.title(@document.issuing_country)}" : "from #{Docaru::Countries.title(@resolved.context)}" %>
 
 <% if (slowest = @resolved.slowest_prerequisite) -%>
 FIRST THING TO DO

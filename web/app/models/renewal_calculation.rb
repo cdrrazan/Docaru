@@ -10,7 +10,7 @@ class RenewalCalculation
   include ActiveModel::Model
   include ActiveModel::Attributes
 
-  DOMESTIC = Renewaru::Rule::Context::DOMESTIC
+  DOMESTIC = Docaru::Rule::Context::DOMESTIC
 
   attribute :country_code, :string
   attribute :document_kind, :string
@@ -131,7 +131,7 @@ class RenewalCalculation
     return [] unless rule
 
     RuleCatalog.origins_for(rule).map do |context|
-      label = context == DOMESTIC ? "In #{Renewaru::Countries.title(rule.country_code)}" : "From #{Renewaru::Countries.title(context)}"
+      label = context == DOMESTIC ? "In #{Docaru::Countries.title(rule.country_code)}" : "From #{Docaru::Countries.title(context)}"
       [ label, context ]
     end
   end

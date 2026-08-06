@@ -51,7 +51,7 @@ class Document < ApplicationRecord
     )
   }
 
-  def context = applying_from.presence || Renewaru::Rule::Context::DOMESTIC
+  def context = applying_from.presence || Docaru::Rule::Context::DOMESTIC
 
   # Nil when the dataset has no rule for this country and kind. That is a real
   # and permanent state — the dataset is deliberately incomplete — so every

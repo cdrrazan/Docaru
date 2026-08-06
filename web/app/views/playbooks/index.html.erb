@@ -15,7 +15,7 @@
     <% rules.each do |rule| %>
       <div class="card">
         <h3>
-          <a href="<%= playbook_path_for(rule, Renewaru::Rule::Context::DOMESTIC) %>"><%= rule.title %></a>
+          <a href="<%= playbook_path_for(rule, Docaru::Rule::Context::DOMESTIC) %>"><%= rule.title %></a>
         </h3>
         <p class="note">
           <%= rule.status == "draft" ? "Unverified" : "Verified" %>
