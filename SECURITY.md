@@ -40,6 +40,31 @@ and a content type. It has no key, no way to obtain one, and no code path that d
 That last property is the one worth attacking, and the one worth reporting on if you find it is not
 true.
 
+**Held elsewhere, on purpose.** Card details are never seen by this application. Checkout is opened
+by redirecting to Paddle, who are the merchant of record; what comes back is a subscription
+identifier and a status. There is no card number, no expiry, and no billing address in this database
+to steal.
+
+**Push subscriptions**, where a household has enabled them: an endpoint URL belonging to the
+browser's own push service, plus the two keys a message is encrypted to. These identify a browser
+rather than a person, they are revocable from the dashboard, and they are scoped to the individual
+user rather than the household — nobody else can enumerate or revoke somebody's device.
+
+## Two things the design deliberately does not cache
+
+Both are places where an obvious convenience would quietly undo the paragraphs above, so they are
+called out rather than left to be rediscovered.
+
+**The service worker caches by allowlist, never denylist.** Only public playbook pages and static
+assets are stored offline. Caching a dashboard would write document metadata into CacheStorage, where
+it outlives signing out and is readable by whoever picks the device up next. A private route added
+later is excluded by default rather than by somebody remembering to exclude it.
+
+**Notification bodies carry the deadline.** A reminder says which document and by when, which means
+it is legible on a lock screen. That is a deliberate trade: a notification that says "you have an
+update" wastes the only sentence it gets, and the alert landing in time is the entire product. Anyone
+for whom that is the wrong trade can leave push off and receive email only.
+
 ## Things that are not vulnerabilities
 
 - **Losing the vault passphrase loses the scans.** There is no recovery. A recovery path the
@@ -47,6 +72,10 @@ true.
 - **Renewal rule data being wrong.** That is a correctness bug — please
   [open an issue](CONTRIBUTING.md), it matters, but it is not a security issue.
 - **Metadata being readable server-side.** Documented above as a design decision.
+- **A notification body naming a document.** Also a design decision, above. Turn push off to opt out.
+- **Reminders continuing after a payment fails.** Intended, and load-bearing. Somebody whose card
+  expires while they are abroad is exactly the person most likely to need the alert, so no billing
+  state ever stops one. There is a test that asserts it.
 
 ## Self-hosting
 
@@ -62,3 +91,11 @@ no published port, which is deliberate.
 
 An instance without working SMTP sends no reminders, which means it does not do the one thing it
 exists for; check that first.
+
+Push and billing are both optional and both off until their keys are set. Two things about them if
+you do switch them on:
+
+- **Generate the VAPID pair once and keep it.** Rotating it silently invalidates every subscription
+  your users have already granted, and browsers will not prompt them again.
+- **`PADDLE_ENVIRONMENT` defaults to `sandbox`.** Of the two ways to get that wrong, the one that
+  cannot charge anybody is the better default. Set it to `production` only when you mean it.
