@@ -62,6 +62,10 @@ toolchain installed before you can fix a typo in it gets fewer corrections.
 `bin/build` also emits `site/rules.json` — the whole dataset plus the derived timeline for each
 playbook, so a consumer never has to reimplement the arithmetic.
 
+[`examples/`](examples/) has runnable consumers in Ruby, Python, JavaScript and jq. All four answer
+the same question and print the same date, which is the point: the published bundle is enough on its
+own, and the derived number does not depend on who derives it.
+
 ## Seeing it work
 
 Needs Ruby 3.3 and MySQL 8.0+ or MariaDB 10.6+.
