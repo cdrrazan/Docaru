@@ -1,10 +1,13 @@
 # A household you can actually look at.
 #
-# An empty dashboard demonstrates nothing: the entire argument of this product
-# is what it says about documents that are in trouble, and you cannot see that
-# with no documents. So this builds one household holding every state the
-# application can be in — on track, due now, overdue, impossible, expired, and
-# unknown — plus the prerequisite chain that is the thing no competitor does.
+# An empty vault demonstrates nothing. This builds one holding what a real
+# household keeps: mostly documents that never expire and simply need to be
+# reachable — a citizenship certificate, a degree, a land deed — plus the
+# handful that do expire, in every state the application can be in, and the
+# prerequisite chain that is the thing no competitor does.
+#
+# The proportions are the point. Six of these thirteen have no deadline at all,
+# which is roughly what a drawer looks like.
 #
 # Dates are relative to today, so the demo is never stale and never has to be
 # regenerated.
@@ -74,7 +77,26 @@ documents = [
   # No rule in the dataset for this one. The dashboard says so rather than
   # inventing a date, and reminders fall back to the expiry date.
   { member: :mother, kind: "residence_permit", issuing_country: "GB", applying_from: "domestic",
-    expires_on: 210, label: "UK biometric residence permit", note: "no rule yet" }
+    expires_on: 210, label: "UK biometric residence permit", note: "no rule yet" },
+
+  # ---- and the larger half of a real vault -------------------------------
+  #
+  # None of these expire, none of them generate a reminder, and every one of
+  # them is a thing somebody actually needs at short notice from the wrong city.
+  # A vault that could only hold the documents with deadlines would be missing
+  # most of what a household keeps.
+  { member: :self, kind: "citizenship_certificate", issuing_country: "NP", applying_from: nil,
+    expires_on: nil, label: nil, note: "stored" },
+  { member: :self, kind: "degree_certificate", issuing_country: "NP", applying_from: nil,
+    expires_on: nil, label: "BSc Computer Science, Tribhuvan University", note: "stored" },
+  { member: :self, kind: "academic_transcript", issuing_country: "NP", applying_from: nil,
+    expires_on: nil, label: "Undergraduate transcript", note: "stored" },
+  { member: :mother, kind: "birth_certificate", issuing_country: "NP", applying_from: nil,
+    expires_on: nil, label: nil, note: "stored" },
+  { member: :brother, kind: "property_deed", issuing_country: "NP", applying_from: nil,
+    expires_on: nil, label: "Lalitpur land certificate (lalpurja)", note: "stored" },
+  { member: :mother, kind: "marriage_certificate", issuing_country: "NP", applying_from: nil,
+    expires_on: nil, label: nil, note: "stored" }
 ]
 
 documents.each do |attributes|
@@ -85,7 +107,9 @@ documents.each do |attributes|
   )
   document.update!(
     applying_from: attributes[:applying_from],
-    expires_on: Date.current + attributes[:expires_on],
+    # nil stays nil: a document with no expiry is the normal case here, not a
+    # missing value to be defaulted.
+    expires_on: attributes[:expires_on] && Date.current + attributes[:expires_on],
     label: attributes[:label]
   )
 end
@@ -103,8 +127,13 @@ if Rails.env.development?
       Email       demo@renewaru.test
       Password    #{PASSWORD}
 
-    #{household.documents.count} documents across #{household.members.count} people, covering every
-    state the dashboard can show — including a vehicle registration blocked by
-    insurance that has already lapsed.
+    #{household.documents.count} documents across #{household.members.count} people.
+    #{household.documents.count { |d| !d.dated? }} of them never expire — a citizenship certificate,
+    a degree, a land deed — which is roughly what a real drawer looks like, and
+    the reason the vault exists at all.
+
+    The #{household.documents.count(&:dated?)} that do expire cover every state the dashboard can
+    show, including a vehicle registration blocked by insurance that has already
+    lapsed.
   DEMO
 end
