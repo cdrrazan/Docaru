@@ -31,7 +31,7 @@ jobs:
           --health-retries=10
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # mysql2 is a native extension and needs the client headers to build.
       - name: Install MySQL client library
@@ -56,7 +56,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # mysql2 is a native extension; bundle install needs the client headers.
       - name: Install MySQL client library
@@ -73,7 +73,7 @@ jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # mysql2 is a native extension; bundle install needs the client headers.
       - name: Install MySQL client library
