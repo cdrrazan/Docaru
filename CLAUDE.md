@@ -67,8 +67,16 @@ Needs MySQL 8.0+/MariaDB 10.6+. Defaults to `docaru`/`docaru` on `127.0.0.1`; ov
 `DATABASE_HOST`/`DATABASE_USERNAME`/`DATABASE_PASSWORD`. Tests run parallel and use four logical databases
 per worker (primary, cache, queue, cable), so the test user needs create rights — CI uses `root`.
 
-Self-hosting: `cp .env.example .env && docker compose up -d --build`. The Docker image has never actually
-been built (no daemon available during development) — see CHANGELOG.md.
+Self-hosting: `cp .env.example .env && docker compose up -d --build`. Built and run: both containers
+healthy, 21 playbooks resolving, `DeliverRemindersJob` clean against MySQL, Solid Queue's supervisor up
+inside Puma. 832MB.
+
+Two things it taught, both worth not re-learning. `DOCARU_RULES_DIR` **must** stay set in the Dockerfile:
+`Docaru::ROOT` derives from `__dir__`, the library lands at `/lib/docaru`, and `/lib` on Debian is a
+symlink to `/usr/lib` — so ROOT comes out as `/usr`, the rules are sought in `/usr/rules`, and every
+playbook 404s while the index still returns 200 with an empty list. And the encryption initializer needs
+its `SECRET_KEY_BASE_DUMMY` branch, because `assets:precompile` boots production inside a build layer
+where no real key exists or should.
 
 ## The one derived number
 

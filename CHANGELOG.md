@@ -7,6 +7,38 @@ Notable changes, newest first. Rule data corrections are not listed individually
 
 Everything so far. Nothing is released yet, and the dataset is entirely unverified.
 
+### A shopfront, a typeface, and an image that had never been built
+
+**`marketing/`** — the static site at `docaru.com`, built with Astro and deployed to Cloudflare Pages,
+with the application at `app.docaru.com`. It exists so copy can change without a Rails deploy. It is
+static rather than a single-page app on purpose: organic search is the acquisition channel, the
+playbook pages are the top of the funnel, and CI fails the build if a `<script>` tag or any
+third-party host appears in the output.
+
+It also replaced a homepage that was still selling the retired product. The old one opened "Every
+document you own has a deadline", never mentioned the vault, encryption or self-hosting, and had no
+link to pricing at all. The new one leads with the afternoon somebody loses to a document in a
+cupboard in another country, and includes the row we lose in the comparison against cloud drives —
+search inside documents is a real thing Drive does and we cannot, and saying so is what makes the
+other rows credible. A related gap: the app's own navigation had no link to the vault.
+
+**Google Sans**, self-hosted rather than linked from Google. Same OFL font, same files, but the CDN
+version would send every reader's IP and referring page to Google on a page arguing that Google can
+read your Drive and we cannot read your vault — and, since a 2022 Munich ruling, raise a live GDPR
+question. See `marketing/FONTS.md`.
+
+**The Docker image had never been built.** It has now, and it was broken twice:
+
+- `assets:precompile` boots production inside a build layer, where the encryption initializer
+  `fetch`ed three keys that cannot exist there. The build simply failed.
+- **The dataset was invisible and nothing said so.** The library is copied to `/lib/docaru`, `/lib` on
+  Debian is a symlink to `/usr/lib`, so `Docaru::ROOT` resolved to `/usr` and the rules were sought in
+  `/usr/rules`. Zero rules loaded. The playbook index still returned 200 with an empty list and every
+  playbook page 404'd — the entire public plane absent from every self-hosted instance, with no error
+  anywhere. `DOCARU_RULES_DIR` existed for exactly this and was never set.
+
+Prices are in USD and annual.
+
 ### A recovery code, and capacity priced on what it costs
 
 Two things stood between this and being sellable as a hosted service, and neither was a missing
@@ -158,8 +190,8 @@ not cosmetic — it changed what the software will accept:
 
 - No renewal rule has been verified. Every playbook says so, on every page.
 - The dataset covers one issuing country. Breadth is a research grind, not an engineering problem.
-- The Docker image has never been built — this was developed without a Docker daemon available.
-  The application itself has been exercised against a real MySQL server; the image around it has not.
+- Nobody has run this in production, including its author. The image builds and runs on a laptop;
+  that is not the same as having operated it.
 - The Paddle integration is tested against payloads built from the documented shapes, not against a
   live sandbox. Confirm the field names and the signature format with a real test event before
   taking money.

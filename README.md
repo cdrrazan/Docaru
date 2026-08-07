@@ -109,7 +109,9 @@ and the one where a missed deadline costs legal status rather than a late fee.
 
 ## Quick start
 
-Needs Ruby 3.4.10+, and MySQL 8.0+ or MariaDB 10.6+ for the application.
+Needs Ruby 3.4.10+, and MySQL 8.0+ or MariaDB 10.6+ for the application. The marketing site is the
+only part that needs Node — see [`marketing/README.md`](marketing/README.md), and nothing else in the
+repository depends on it.
 
 <table>
 <tr><td valign="top" width="50%">
@@ -168,10 +170,10 @@ product.
 Back up **both** volumes: `docaru-db` holds the deadlines, `docaru-storage` holds the encrypted
 attachments, and neither is much use without the other.
 
-> [!WARNING]
-> The Docker image has never been built — this was developed without a Docker daemon available. The
-> application has been exercised against a real MySQL server; the image around it has not. Build it
-> once locally before pointing a domain at it. See [CHANGELOG.md](CHANGELOG.md).
+> [!NOTE]
+> The image is built and exercised: both containers healthy, all 21 playbooks resolving, the nightly
+> reminder job running clean against MySQL, and Solid Queue's supervisor up inside Puma. It has not
+> yet run anywhere but a laptop, so treat the first deployment as a first deployment.
 
 ## How the encryption works
 
@@ -388,11 +390,28 @@ whole thing rests on.
 | [`bin/`](bin/) | [`validate`](bin/validate) and [`build`](bin/build) |
 | [`examples/`](examples/) | Runnable consumers in four languages |
 | [`web/`](web/) | The Rails 8 application — [its own README](web/README.md) |
+| [`marketing/`](marketing/) | The static shopfront at `docaru.com` — [its own README](marketing/README.md) |
 | [`renewal-vault-spec.md`](renewal-vault-spec.md) | The product spec the code comments cite by section |
 
 `rules/` sits at the top of the repository rather than inside `web/` because it is the one part of
 this that is published. Somebody correcting a renewal fee should never have to learn that a Rails
 application exists — and nothing in `rules/` has ever seen a user's document.
+
+### Three deployables
+
+| | Built from | Deployed to |
+|---|---|---|
+| **Marketing** | [`marketing/`](marketing/) — Astro, static | `docaru.com` |
+| **Application** | [`web/`](web/) — Rails, Docker | `app.docaru.com` |
+| **Playbook bundle** | `ruby bin/build` → `site/` | GitHub Pages, when enabled |
+
+The marketing site is deliberately **not** a single-page app. Organic search is the acquisition
+channel and the playbook pages are the top of the funnel, so every marketing page is HTML by the time
+it reaches a CDN — CI fails the build if a `<script>` tag or a third-party host appears in the output.
+
+The calculator stays in the Rails app rather than moving to the static site, because
+[`Timeline`](lib/docaru/timeline.rb) owns the phrasing of every verdict so that two renderers cannot
+describe one rule differently. A JavaScript reimplementation on the marketing site would make three.
 
 ## Helping
 

@@ -33,10 +33,10 @@ docker compose up -d --build`}</code></pre>
   <div class="panel panel-warn">
     <p class="eyebrow">Worth knowing before you rely on it</p>
     <p style="margin:0">
-      The Docker image has never actually been built — this was developed without a Docker daemon
-      available. The application itself runs against a real MySQL server and its test suite passes;
-      the image around it is unexercised. If you are the first to try it, expect to fix something,
-      and please open an issue when you do.
+      Nobody has run this in production yet, including us. The image builds and runs — both
+      containers healthy, every renewal guide resolving, the nightly reminder job working against a
+      real database — but it has only done so on a laptop. If you are among the first, expect to hit
+      something, and please open an issue when you do.
     </p>
   </div>
 
