@@ -39,7 +39,17 @@ ENV RAILS_ENV="production" \
     # Runs the Solid Queue supervisor inside the Puma process, so the reminder
     # sweep is not a separate service somebody can forget to start. The sweep
     # is the product; it must not be optional.
-    SOLID_QUEUE_IN_PUMA="true"
+    SOLID_QUEUE_IN_PUMA="true" \
+    # Stated rather than derived, because deriving it is wrong here.
+    #
+    # `Docaru::ROOT` is `File.expand_path("../..", __dir__)`, which in the
+    # repository resolves the library back to the repository root. In this image
+    # the library sits at /lib/docaru — and on Debian /lib is a symlink to
+    # /usr/lib, so __dir__ resolves to /usr/lib/docaru and ROOT comes out as
+    # /usr. The dataset then looks for its rules in /usr/rules, finds nothing,
+    # and every playbook page 404s while the index still renders empty and
+    # returns 200. Nothing crashes; the product is simply gone.
+    DOCARU_RULES_DIR="/rules"
 
 # ---- build ------------------------------------------------------------------
 
