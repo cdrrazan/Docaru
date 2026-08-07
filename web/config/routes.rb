@@ -57,6 +57,11 @@ Rails.application.routes.draw do
   # subscription without having been told a database id.
   resource :push_subscription, only: %i[create destroy]
 
+  # One vault key per household, held as two blobs the server cannot open.
+  # No destroy: deleting the wrapping would orphan every scan the household
+  # owns, and there is no undo for that anywhere in the system.
+  resource :vault_key, only: %i[create update]
+
   # Installable, because the people this is for check a deadline on a phone
   # abroad rather than at a desk. The service worker caches the public playbooks
   # only — see the rule at the top of that file.
