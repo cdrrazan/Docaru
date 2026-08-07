@@ -19,7 +19,8 @@ class PlansController < ApplicationController
     checkout = Paddle.create_checkout(
       household: household,
       email: current_user.email_address,
-      success_url: dashboard_url
+      success_url: dashboard_url,
+      plan: requested_plan
     )
 
     redirect_to checkout, allow_other_host: true
@@ -29,6 +30,15 @@ class PlansController < ApplicationController
   end
 
   private
+
+  # Whitelisted against what this instance can actually sell, so a hand-edited
+  # form cannot open a checkout for a plan with no configured price — or, worse,
+  # name a plan that is not a plan.
+  def requested_plan
+    candidate = params[:plan].to_s
+
+    Paddle.sellable_plans.include?(candidate) ? candidate : "household"
+  end
 
   def unconfigured_message
     "Billing is not switched on for this instance. Nothing was charged, and every reminder " \

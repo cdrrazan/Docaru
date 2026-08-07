@@ -7,6 +7,37 @@ Notable changes, newest first. Rule data corrections are not listed individually
 
 Everything so far. Nothing is released yet, and the dataset is entirely unverified.
 
+### A recovery code, and capacity priced on what it costs
+
+Two things stood between this and being sellable as a hosted service, and neither was a missing
+feature.
+
+**Losing the passphrase meant losing the documents.** Defensible for software you run yourself,
+close to unsellable hosted: the customer who forgets it loses everything, blames the operator, and
+is right that nobody can help. Scans are now encrypted under a random vault key rather than under
+the passphrase itself, and that key is stored twice — wrapped under the passphrase, wrapped under a
+160-bit recovery code. Both wrappings are made in the browser, so the server still holds two blobs
+and no key; an operator, a stolen backup and a subpoena all still get nothing. Lose both and the
+files are still gone, which has not changed and should not. A side effect worth having: a wrong
+passphrase is now caught at unlock, where previously it was discovered later as a gallery full of
+failed decryptions.
+
+**The free tier metered the wrong thing.** The pricing page claimed to limit storage; the code
+limited document count, at 20 — while one document could hold 100 pages of 10 MB, putting the real
+free ceiling near 20 GB. Bytes are metered now, where bytes arrive, and documents are unlimited on
+every plan including free. Recording that a marriage certificate exists is the point of the vault,
+and it costs a database row.
+
+Also: plans are annual rather than monthly, because a vault is opened about three times a year and
+monthly billing offers twelve chances a year to cancel it. A 100 GB Archive tier for decades of
+scanned paper. One Paddle price per plan, with the old `PADDLE_PRICE_ID` still read as the household
+price so a configured instance keeps working. And the pricing page now states the actual reason to
+pay for hosting — that we cannot read the files and a cloud drive can read theirs — along with what
+that rules out: no search inside documents, no previews, nothing that needs the plaintext.
+
+Unchanged and now tested at every billing status: going over a limit costs capacity, never access.
+Nothing is deleted, nothing stops being watched, and `alerting?` stays unconditionally true.
+
 ### The vault holds documents from anywhere
 
 The country picker offered fourteen countries — the ones the renewal dataset happened to mention.

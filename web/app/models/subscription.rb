@@ -31,8 +31,16 @@ class Subscription < ApplicationRecord
   # a household ends up on the household plan with no subscription, or the
   # reverse, and only one of those is discovered by a customer.
   def apply!
-    household.update!(plan: entitled? ? "household" : "free")
+    household.update!(plan: entitled? ? entitled_plan : "free")
   end
+
+  # Which plan the money bought, read back from the price Paddle billed. Falls
+  # back to the household plan when the price is one this instance does not
+  # recognise — a price that has been retired, or an instance whose environment
+  # has been reconfigured since the sale. Erring towards the cheaper paid tier
+  # is the right way to be wrong: it under-serves rather than over-charges, and
+  # it never demotes a paying customer to free over a lookup miss.
+  def entitled_plan = Paddle.plan_for_price(price_id) || "household"
 
   # Webhooks arrive out of order as a matter of course. An older event must not
   # be allowed to overwrite what a newer one already said — that is how a

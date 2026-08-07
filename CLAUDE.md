@@ -144,9 +144,18 @@ explicitly, not autoloaded, because Rails does not own it.
   are mapped to digits *only* inside the runs the standard defines as numeric, and the check digits rule on
   the result. Deliberately one deterministic candidate, never a search: trying substitutions until one
   satisfies a one-digit checksum finds a passing answer about one time in ten whether or not it is true.
-- **Vault** — `app/javascript/controllers/vault_controller.js` does AES-GCM in the browser with a PBKDF2 key
-  from a passphrase that never leaves the tab. `AttachmentsController` and `Attachment` handle opaque bytes
+- **Vault** — `app/javascript/controllers/vault_controller.js` does AES-GCM in the browser. Scans are
+  encrypted under a random **vault key**, not under the passphrase: the passphrase wraps that key, and so
+  does a recovery code, so `households` holds the same key sealed twice and can open neither.
+  `VaultKeysController` stores those two blobs and must never learn to unwrap them. The indirection is what
+  makes a forgotten passphrase survivable and a passphrase change cheap — and it means a wrong passphrase
+  fails at unlock rather than silently later. `AttachmentsController` and `Attachment` handle opaque bytes
   only. **Never add server-side decryption, thumbnailing, resizing, or filename storage.**
+- **Capacity is bytes, never documents.** `Household::STORAGE_LIMITS` is what plans limit, metered in
+  `AttachmentsController#create` where the bytes arrive. Documents are unlimited on every plan — refusing
+  to record that a marriage certificate exists, to save a database row, is the vault declining its own job.
+  Going over costs the ability to add more and nothing else: nothing is deleted, nothing stops being
+  watched. If you find yourself reintroducing a document cap, that is the bug.
 - **`app/views/pwa/service-worker.js`** — caches by **allowlist**, never denylist, so a private route added
   later is excluded by default. Caching a dashboard would write document metadata into CacheStorage, where it
   outlives signing out. There is a test that fails if a private path enters the allowlist.

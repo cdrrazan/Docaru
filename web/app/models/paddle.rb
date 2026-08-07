@@ -29,7 +29,24 @@ module Paddle
   class << self
     def api_key = ENV["PADDLE_API_KEY"].presence
     def webhook_secret = ENV["PADDLE_WEBHOOK_SECRET"].presence
-    def price_id = ENV["PADDLE_PRICE_ID"].presence
+
+    # One price per paid plan. `PADDLE_PRICE_ID` remains the household price so
+    # an instance configured before the archive tier existed keeps working
+    # without being edited.
+    def price_ids
+      {
+        "household" => ENV["PADDLE_PRICE_ID_HOUSEHOLD"].presence || ENV["PADDLE_PRICE_ID"].presence,
+        "archive" => ENV["PADDLE_PRICE_ID_ARCHIVE"].presence
+      }.compact
+    end
+
+    def price_id(plan = "household") = price_ids[plan]
+
+    # Which plan a webhook's price belongs to. Reversed from the same table, so
+    # a price can never be sold as one plan and honoured as another.
+    def plan_for_price(id) = price_ids.key(id)
+
+    def sellable_plans = price_ids.keys
 
     # Sandbox by default. Getting this backwards means either taking real money
     # in a test or silently taking none in production; defaulting to the one
@@ -38,9 +55,9 @@ module Paddle
 
     def host = sandbox? ? "sandbox-api.paddle.com" : "api.paddle.com"
 
-    # The upgrade button only appears when all three are present. A checkout
-    # that fails after the click is worse than one that was never offered.
-    def configured? = api_key.present? && webhook_secret.present? && price_id.present?
+    # The upgrade button only appears when a checkout could actually succeed. A
+    # checkout that fails after the click is worse than one never offered.
+    def configured? = api_key.present? && webhook_secret.present? && price_ids.any?
 
     # Constant-time comparison, and the timestamp is part of what is signed —
     # otherwise a captured payload could be replayed forever.
@@ -59,11 +76,13 @@ module Paddle
 
     # A transaction is a checkout that has not happened yet. Paddle hands back a
     # URL to send the buyer to, which is why no script of theirs has to run here.
-    def create_checkout(household:, email:, success_url:)
+    def create_checkout(household:, email:, success_url:, plan: "household")
       raise NotConfigured unless configured?
 
+      price = price_id(plan) or raise NotConfigured, "no Paddle price configured for the #{plan} plan"
+
       response = post("/transactions", {
-        items: [ { price_id: price_id, quantity: 1 } ],
+        items: [ { price_id: price, quantity: 1 } ],
         customer: { email: email },
         # Comes back on every webhook for this subscription, so the household
         # can be found without trusting anything the browser said.

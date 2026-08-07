@@ -124,7 +124,10 @@
 
     <% if @household.plan == "free" %>
       <% if Paddle.configured? %>
-        <%= button_to "Upgrade to the household plan", plan_path, method: :patch, class: "btn" %>
+        <% Paddle.sellable_plans.each do |plan| %>
+          <%= button_to "Upgrade to the #{plan} plan", plan_path(plan: plan),
+                        method: :patch, class: "btn" %>
+        <% end %>
         <p class="note">
           Checkout is handled by Paddle, who are the seller of record and will show the price in
           your own currency with any tax already included.
