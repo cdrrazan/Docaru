@@ -49,6 +49,19 @@ jobs:
           fi
           grep -q 'rel="canonical"' dist/index.html
 
+      # The pitch on these pages is that Google cannot see your documents.
+      # Fetching the font from Google would hand them every visitor's IP and
+      # referring page, which is both a bad look and, since the 2022 Munich
+      # ruling, a live GDPR question. The font is OFL and self-hosted; this
+      # keeps it that way.
+      - name: Assert no third-party requests
+        run: |
+          if grep -rlE 'https?://(fonts\.googleapis\.com|fonts\.gstatic\.com|[a-z0-9.-]*cdn[a-z0-9.-]*/)' dist/*.html; then
+            echo "::error::A page reaches a third-party host. See marketing/FONTS.md."
+            exit 1
+          fi
+          test -f dist/fonts/google-sans-latin.woff2
+
       # High-severity advisories in the tree that builds the public shopfront
       # should behave like bundler-audit does for the app: fail, not warn.
       - name: Audit dependencies

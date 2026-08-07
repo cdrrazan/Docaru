@@ -17,6 +17,10 @@ export default defineConfig({
   // the canonical URLs here have to match what the sitemap and the Rails app
   // link to, and "/pricing" and "/pricing/" are two pages to a crawler.
   trailingSlash: "never",
-  build: { format: "file" },
+  // Four pages sharing one small stylesheet. Extracted, it is a second
+  // render-blocking request on every first visit for the sake of a cache hit on
+  // a second page nobody is guaranteed to visit; inlined, every page paints
+  // from one response.
+  build: { format: "file", inlineStylesheets: "always" },
   devToolbar: { enabled: false }
 })

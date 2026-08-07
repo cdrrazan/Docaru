@@ -20,6 +20,17 @@ const canonical = new URL(path, Astro.site ?? "https://docaru.com").toString()
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
 
+    {/* Self-hosted, so there is no preconnect to a font CDN to do — the file is
+        on this origin and the connection is already open. Preloaded because it
+        is on the critical path for the first paint of every heading. */}
+    <link
+      rel="preload"
+      href="/fonts/google-sans-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Docaru" />
     <meta property="og:title" content={title} />
