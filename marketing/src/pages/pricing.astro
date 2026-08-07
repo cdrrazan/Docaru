@@ -1,0 +1,90 @@
+---
+import Base from "../layouts/Base.astro"
+
+const APP = import.meta.env.PUBLIC_APP_URL || "https://app.docaru.com"
+
+// Kept in step with Household::STORAGE_LIMITS and MEMBER_LIMITS by hand. The
+// app's own /plan page is the one a signed-in household sees, and it reads the
+// real numbers; this page is the shopfront. If the two ever disagree, the app
+// is right and this is stale.
+const plans = [
+  {
+    name: "Free",
+    price: "£0",
+    per: "",
+    lines: ["1 person", "1 GB — around 4,000 scans", "Unlimited documents", "Every alert", "Every renewal playbook"]
+  },
+  {
+    name: "Household",
+    price: "~£30",
+    per: "/year",
+    lines: ["Up to 6 people", "25 GB", "Unlimited documents", "Shared alerts across the household", "Everything in Free"]
+  },
+  {
+    name: "Archive",
+    price: "~£70",
+    per: "/year",
+    lines: ["Up to 6 people", "100 GB", "For decades of scanned paper", "Everything in Household"]
+  },
+  {
+    name: "Self-hosted",
+    price: "£0",
+    per: "",
+    lines: ["Everything, on your own machine", "Storage is whatever your disk is", "One container", "Your data never touches us"]
+  }
+]
+---
+<Base
+  title="Pricing — Docaru"
+  description="Free for one person and a gigabyte. Documents are unlimited on every plan, and alerts and renewal playbooks are never paywalled."
+  path="/pricing"
+>
+  <h1>Pricing</h1>
+
+  <p class="lede">
+    Storage is what costs us money, so storage is the only thing the plans limit. Documents are
+    unlimited everywhere — recording that a marriage certificate exists is the point of the thing.
+  </p>
+
+  <div class="cards">
+    {plans.map((plan) => (
+      <div class="card">
+        <h3>{plan.name}</h3>
+        <p class="headline">{plan.price}<span class="per">{plan.per}</span></p>
+        <ul>{plan.lines.map((line) => <li>{line}</li>)}</ul>
+      </div>
+    ))}
+  </div>
+
+  <div class="actions">
+    <a class="btn" href={`${APP}/registration/new`}>Start free</a>
+    <a class="btn btn-quiet" href="/self-host">Self-host instead</a>
+  </div>
+
+  <h2>Billed yearly, on purpose</h2>
+  <p>
+    A vault gets opened about three times a year. Billing monthly for something you rarely touch
+    hands you twelve occasions a year to wonder whether you still need it, which is a worse deal for
+    both of us than paying once. Checkout is handled by Paddle, who are the seller of record and
+    will show the price in your own currency with any tax already included.
+  </p>
+
+  <h2>What happens if you stop paying</h2>
+  <p>
+    You keep every document, every scan and every reminder. Nothing is deleted, nothing stops being
+    watched, and no file becomes unreadable. What you lose is room to add more, until you are back
+    under the free limits or back on a paid plan.
+  </p>
+  <p>
+    Reminders in particular are never gated on billing. Somebody whose card fails while they are
+    abroad is exactly the person most likely to need the alert, and there is a test in the codebase
+    that walks every billing state and asserts it.
+  </p>
+
+  <h2>What we cannot sell you</h2>
+  <p>
+    Search inside your documents. Previews and thumbnails. Automatic filing, or anything described as
+    smart. All of those need a copy of your passport that we are able to open, and we are not.
+    <a href="/security">That trade is the product</a>.
+  </p>
+</Base>

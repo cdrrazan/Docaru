@@ -1,0 +1,96 @@
+---
+import Base from "../layouts/Base.astro"
+
+const APP = import.meta.env.PUBLIC_APP_URL || "https://app.docaru.com"
+
+// The old homepage opened "Every document you own has a deadline. We tell you
+// which one is next." That sold the layer on top. Most of what a household
+// keeps — a birth certificate, a degree, a land deed — has no deadline at all
+// and exists in here so it can be reached from another city. Storage is the
+// product; renewals are what makes it worth opening.
+const reasons = [
+  {
+    title: "We cannot read your files",
+    body: "Scans are encrypted in your browser before upload, with a key derived from a passphrase that never reaches us. What we store is ciphertext with no filename attached. That is not a promise about our conduct — it is a property of the code, and the code is public."
+  },
+  {
+    title: "Your family's documents, not just yours",
+    body: "One vault, everyone in the household. Your mother's citizenship certificate is where you can find it at 2am from another timezone, instead of in a drawer thirty kilometres away."
+  },
+  {
+    title: "Run it yourself, or let us run it",
+    body: "One container and a database. Self-hosting is the stronger option and it is free — we would rather say so than pretend our servers are safer than yours."
+  },
+  {
+    title: "It knows which ones expire",
+    body: "For the documents that do have deadlines, it works out the date you have to start — counting back through processing times and the prerequisites you have not ordered yet — and reminds you then, not when it expires."
+  }
+]
+---
+<Base
+  title="Docaru — the documents you will not put in Google Drive"
+  description="A self-hosted, browser-encrypted vault for your household's documents, reachable from anywhere — that also tells you when the ones with deadlines need renewing."
+  path="/"
+>
+  <h1>The documents you will not<br />put in Google&nbsp;Drive.</h1>
+
+  <p class="lede">
+    Your citizenship certificate, your degree, the land deed, your mother's passport. Encrypted in
+    your browser, stored where nobody — including us — can open them, and reachable from wherever
+    you happen to be when somebody asks for a copy.
+  </p>
+
+  <div class="actions">
+    <a class="btn" href={`${APP}/registration/new`}>Create a vault</a>
+    <a class="btn btn-quiet" href="/self-host">Or run it yourself</a>
+  </div>
+
+  <p class="note">Free for one person and a gigabyte. No card.</p>
+
+  <div class="panel">
+    <p class="eyebrow">The problem, concretely</p>
+    <p style="margin:0">
+      You are in Doha. A visa application wants your birth certificate and your father's citizenship
+      certificate. Both are in a folder in a cupboard in Kathmandu. Somebody has to go and find them,
+      photograph them badly, and send them over WhatsApp — where they will sit forever, in a chat, on
+      a server you do not control.
+    </p>
+  </div>
+
+  <h2>Why this rather than a cloud drive</h2>
+
+  <div class="cards">
+    {reasons.map((reason) => (
+      <div class="card">
+        <h3>{reason.title}</h3>
+        <p class="note">{reason.body}</p>
+      </div>
+    ))}
+  </div>
+
+  <h2>The renewal layer</h2>
+
+  <p>
+    A calendar reminder says "passport expires 14 March". It does not say "start in November, because
+    renewing from abroad takes ten weeks and needs a police certificate you have not ordered yet."
+    The failure is not memory. It is lead time.
+  </p>
+
+  <p>
+    For documents that expire, Docaru computes the date you have to <em>start</em> — from the renewal
+    window, the worst-case processing time, and the lead time on every prerequisite — and reminds you
+    then. The rules behind it are
+    <a href="https://github.com/cdrrazan/Docaru/tree/main/rules">a public dataset</a>, so nobody has
+    to trust us about a number they can check themselves.
+  </p>
+
+  <div class="actions">
+    <a class="btn btn-quiet" href={`${APP}/when-to-start`}>Work out when to start &rarr;</a>
+    <a class="btn btn-quiet" href={`${APP}/playbooks`}>Browse the playbooks</a>
+  </div>
+
+  <p class="note">
+    Both are free and need no account. Reminders are never paywalled either — putting the safety
+    feature behind a card form would poison the trust the whole thing rests on.
+  </p>
+</Base>

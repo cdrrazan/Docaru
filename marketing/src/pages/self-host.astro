@@ -1,0 +1,100 @@
+---
+import Base from "../layouts/Base.astro"
+
+const REPO = "https://github.com/cdrrazan/Docaru"
+---
+<Base
+  title="Self-hosting — Docaru"
+  description="One container and a MySQL database. Self-hosting is the stronger option and it is free — here is what it takes and what it costs you."
+  path="/self-host"
+>
+  <h1>Run it yourself</h1>
+
+  <p class="lede">
+    Self-hosting is the stronger option, and it is free. We would rather say that plainly than
+    pretend our servers are safer than yours — the reason to choose this product is that nobody else
+    can read your documents, and running it yourself is the most complete version of that.
+  </p>
+
+  <h2>What it takes</h2>
+
+  <pre><code>{`git clone ${REPO}
+cd Docaru
+cp .env.example .env && $EDITOR .env
+docker compose up -d --build`}</code></pre>
+
+  <p>
+    Two services: the application and a MySQL server. The application is a single process — the
+    nightly reminder sweep runs inside it, so it cannot be the thing an operator forgets to start.
+    The renewal rules are baked into the image, so an instance with no outbound network still knows
+    every rule it shipped with.
+  </p>
+
+  <div class="panel panel-warn">
+    <p class="eyebrow">Worth knowing before you rely on it</p>
+    <p style="margin:0">
+      The Docker image has never actually been built — this was developed without a Docker daemon
+      available. The application itself runs against a real MySQL server and its test suite passes;
+      the image around it is unexercised. If you are the first to try it, expect to fix something,
+      and please open an issue when you do.
+    </p>
+  </div>
+
+  <h2>What you have to provide</h2>
+
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr><th>Thing</th><th>Needed for</th><th>Without it</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SMTP</td>
+          <td>Reminder emails</td>
+          <td>Nothing is delivered, which is the one job it has. Configure this first.</td>
+        </tr>
+        <tr>
+          <td>A hostname</td>
+          <td>Links inside those emails</td>
+          <td>A relative link in an email goes nowhere.</td>
+        </tr>
+        <tr>
+          <td>VAPID keys</td>
+          <td>Push notifications</td>
+          <td>Email still goes out; the toggle is hidden.</td>
+        </tr>
+        <tr>
+          <td>Paddle keys</td>
+          <td>Billing</td>
+          <td>Every household stays free. Nothing is paywalled anyway.</td>
+        </tr>
+        <tr>
+          <td>Backups</td>
+          <td>Your documents surviving your disk</td>
+          <td>Nobody else has a copy. That is the point, and it is also the risk.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Back up both volumes</h2>
+
+  <p>
+    <code>docaru-db</code> holds the records and the deadlines. <code>docaru-storage</code> holds the
+    encrypted scans. Neither is useful without the other, and neither is useful without your vault
+    passphrase — which is not in either of them, because it never left your browser.
+  </p>
+
+  <h2>What you give up</h2>
+
+  <p>
+    Nothing in the software. Reminders, playbooks, the vault, the passphrase recovery and the
+    prerequisite chains all work identically; there is no feature held back for the hosted version
+    and no phone-home. What you take on is the operations: upgrades, TLS, and backups that you have
+    actually tested restoring.
+  </p>
+
+  <p>
+    <a href={`${REPO}#self-hosting`}>Full instructions are in the README</a>.
+  </p>
+</Base>

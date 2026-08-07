@@ -2,6 +2,14 @@
 # a checked-in copy would silently drift from the data it claims to render.
 /site/
 
+# The marketing site's build output and toolchain. Same argument as /site/:
+# built from source at deploy time, never committed. package-lock.json *is*
+# committed — it is the only thing pinning the transitive tree that npm audit
+# reports on.
+/marketing/dist/
+/marketing/node_modules/
+/marketing/.astro/
+
 .DS_Store
 *.swp
 

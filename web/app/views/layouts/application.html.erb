@@ -55,6 +55,10 @@
           <a href="<%= playbooks_path %>">Playbooks</a>
           <a href="<%= plan_path %>">Pricing</a>
           <% if authenticated? %>
+            <%# The vault first, then the queue. Most of what a household holds %>
+            <%# never appears on the dashboard, so a nav that offered only %>
+            <%# "Deadlines" hid the product behind the feature. %>
+            <a href="<%= documents_path %>">Vault</a>
             <a href="<%= dashboard_path %>">Deadlines</a>
             <%= button_to "Sign out", session_path, method: :delete, class: "btn btn-quiet",
                   form: { style: "display:inline" } %>

@@ -18,6 +18,13 @@ Two things in one repository, deliberately kept apart:
   toolchain. **Ruby 3.4.10+, no gems, no bundler, no network.** Never add a dependency here; the constraint
   exists so a contributor can fix a typo in a YAML file without installing anything.
 - **`web/`** — a Rails 8.1 application that consumes the dataset. Gems live here only.
+- **`marketing/`** — the static shopfront at `docaru.com` (Astro, Node). The application is a separate
+  deployment at `app.docaru.com`. It exists so copy can change without a Rails deploy, and it is
+  **static, never a SPA**: organic search is the acquisition channel, so `npm run build` emits HTML with
+  no JavaScript and CI fails if a `<script>` tag appears. Node lives here and nowhere else — it must never
+  leak into the dataset plane. The calculator deliberately stays in Rails: `Timeline` owns verdict
+  phrasing so two renderers cannot describe one rule differently, and a JS reimplementation would make
+  three.
 
 The dataset is the public artefact and sits at the repository root for that reason. Do not move it into
 `web/`, and do not load rules into ActiveRecord — the split between the public plane (flat files, edited by

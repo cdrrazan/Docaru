@@ -1,53 +1,59 @@
-<% content_for :title, "Every document you own has a deadline" %>
+<% content_for :title, "Docaru" %>
+<% content_for :description, "Your household's documents, encrypted in your browser and reachable from anywhere. Sign in, or work out when to start a renewal without an account." %>
 
-<h1>Every document you own has a deadline.<br>We tell you which one is next.</h1>
+<%# The front door of the *application*, not the shopfront. The pitch lives on %>
+<%# the marketing site, which deploys on its own schedule and is where the %>
+<%# design effort goes; this page's job is to get a visitor to the thing they %>
+<%# came for in one click. It used to open "Every document you own has a %>
+<%# deadline", which sold the layer on top rather than the product. %>
+<h1>Your documents, where you can reach them.</h1>
 
 <p class="lede">
-  A calendar reminder says "passport expires 14 March". It does not say "start in November, because
-  renewing from abroad takes ten weeks and needs a police certificate you have not ordered yet."
-  The failure is not memory. It is lead time.
+  Encrypted in your browser before they are uploaded, so nobody here can open them — and reachable
+  from wherever you are when somebody asks for a copy.
 </p>
 
-<section class="answer">
-  <p class="eyebrow">Start here</p>
-  <p class="headline"><a href="<%= calculator_path %>">Work out when to start &rarr;</a></p>
-  <p>
-    Tell it what you have and when it expires. No account, nothing stored.
-    Or <a href="<%= playbooks_path %>">browse <%= pluralize(@playbook_count, "playbook") %></a>
-    across <%= pluralize(@rules.size, "document") %> and
-    <%= pluralize(@country_count, "issuing country") %>.
-  </p>
-</section>
+<% if authenticated? %>
+  <section class="answer">
+    <p class="eyebrow">Signed in</p>
+    <p class="headline"><%= link_to "Open the vault →", documents_path %></p>
+    <p>
+      Or see <%= link_to "what needs doing", dashboard_path %> — the documents with deadlines, and
+      the dates you have to start.
+    </p>
+  </section>
+<% else %>
+  <section class="answer">
+    <p class="eyebrow">Start here</p>
+    <p class="headline"><%= link_to "Create a vault →", new_registration_path %></p>
+    <p>
+      Free for one person and a gigabyte, no card. Already have one?
+      <%= link_to "Sign in", new_session_path %>.
+    </p>
+  </section>
+<% end %>
 
-<h2>Why this is different</h2>
+<h2>Free, and no account needed</h2>
 
 <div class="cards">
   <div class="card">
-    <h3>It knows the process, not just the date</h3>
+    <h3><%= link_to "Work out when to start", calculator_path %></h3>
     <p class="note">
-      Renewal windows, processing times, and the prerequisites that have to be obtained first —
-      so the answer is a date to start, not a date to panic.
+      Tell it what you have and when it expires. It counts back through processing times and the
+      prerequisites you have not ordered yet, and gives you a date to begin. Nothing is stored.
     </p>
   </div>
   <div class="card">
-    <h3>It handles more than one country at once</h3>
+    <h3><%= link_to "Browse the playbooks", playbooks_path %></h3>
     <p class="note">
-      Renewing from Doha is not renewing from London: different queue, different mission, different
-      paperwork. Every playbook is written per origin.
-    </p>
-  </div>
-  <div class="card">
-    <h3>It admits what it does not know</h3>
-    <p class="note">
-      Every figure carries a last-verified date and a link to the authority. Unverified rules say so
-      on the page, loudly.
-    </p>
-  </div>
-  <div class="card">
-    <h3>It is open</h3>
-    <p class="note">
-      The rules are a public dataset. Anyone can correct one, and nobody has to trust us about a
-      number they can check themselves.
+      <%= pluralize(@playbook_count, "playbook") %> across <%= pluralize(@rules.size, "document") %>
+      and <%= pluralize(@country_count, "issuing country") %> — what each renewal needs, what it
+      costs, and how long it really takes from where you are.
     </p>
   </div>
 </div>
+
+<p class="note">
+  Reminders and playbooks are never paywalled. Somebody whose card fails while they are abroad is
+  exactly the person most likely to need the alert.
+</p>

@@ -1,0 +1,194 @@
+/*
+ * The same palette as the Rails app's application.css, deliberately duplicated
+ * rather than shared.
+ *
+ * Sharing it would mean a build step that reaches across the two planes, and
+ * these are two deployments on two schedules — the coupling would cost more
+ * than the twelve custom properties are worth. They are copied, and the comment
+ * in both files says so, which is the honest version of "keep these in sync".
+ *
+ * No web fonts. A font request is a third-party request, on a site whose whole
+ * argument is about who can see your data.
+ */
+:root {
+  --bg: #fbfbf9;
+  --fg: #1a1a1a;
+  --muted: #5c5c56;
+  --line: #e2e2dc;
+  --card: #ffffff;
+  --accent: #1c5d4a;
+  --accent-fg: #ffffff;
+  --warn-bg: #fdf6e3;
+  --warn-line: #d9c47a;
+  --ok-bg: #e8f4ee;
+  --ok-line: #8fc3aa;
+  --radius: 8px;
+  --wrap: 62rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14140f;
+    --fg: #ecece4;
+    --muted: #a3a399;
+    --line: #34342c;
+    --card: #1c1c16;
+    --accent: #7fd4b8;
+    --accent-fg: #10231c;
+    --warn-bg: #2b2617;
+    --warn-line: #6b5c2a;
+    --ok-bg: #17281f;
+    --ok-line: #35604a;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+.wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 1.25rem; }
+
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Visible on focus rather than hidden entirely: the nav sits between a keyboard
+   user and the content on every page. */
+.skip {
+  position: absolute;
+  left: -9999px;
+}
+.skip:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 10;
+  background: var(--card);
+  padding: .6rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.masthead {
+  border-bottom: 1px solid var(--line);
+  background: var(--card);
+}
+.masthead .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding-block: .85rem;
+}
+.brand {
+  font-weight: 700;
+  font-size: 1.15rem;
+  text-decoration: none;
+  color: var(--fg);
+  margin-right: auto;
+}
+nav { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+nav a { text-decoration: none; }
+nav a:hover { text-decoration: underline; }
+
+main { padding-block: 3rem 4rem; }
+
+h1 { font-size: clamp(2rem, 5vw, 2.9rem); line-height: 1.15; margin: 0 0 1rem; letter-spacing: -.02em; }
+h2 { font-size: clamp(1.4rem, 3vw, 1.8rem); margin: 3rem 0 1rem; letter-spacing: -.01em; }
+h3 { margin: 0 0 .5rem; font-size: 1.05rem; }
+
+.lede { font-size: 1.15rem; color: var(--muted); max-width: 44rem; }
+.note { color: var(--muted); }
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-size: .75rem;
+  color: var(--muted);
+  margin: 0 0 .35rem;
+}
+
+.btn {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--accent-fg);
+  padding: .7rem 1.15rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.btn:hover { text-decoration: none; opacity: .92; }
+.btn-quiet {
+  background: transparent;
+  color: var(--accent);
+  border-color: var(--line);
+}
+
+.actions { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1.75rem 0 .5rem; }
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+.card ul { margin: .75rem 0 0; padding-left: 1.1rem; }
+.card li { margin-bottom: .35rem; }
+.headline { font-size: 1.9rem; font-weight: 700; margin: .25rem 0 .5rem; }
+.headline .per { font-size: .85rem; font-weight: 400; color: var(--muted); }
+
+.panel {
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-line);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+}
+.panel-warn { background: var(--warn-bg); border-color: var(--warn-line); }
+
+/* Wide content scrolls inside itself; the page body never scrolls sideways. */
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 34rem; }
+th, td { text-align: left; padding: .6rem .75rem; border-bottom: 1px solid var(--line); }
+th { font-size: .85rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+
+pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+pre {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: .9rem;
+}
+code { font-size: .92em; }
+p > code, li > code {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: .1em .35em;
+}
+
+.site-foot {
+  border-top: 1px solid var(--line);
+  padding-block: 2rem 3rem;
+  color: var(--muted);
+  font-size: .92rem;
+}
+.site-foot .wrap { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; }
+.site-foot nav { gap: 1rem; }
+
+img, svg { max-width: 100%; height: auto; }

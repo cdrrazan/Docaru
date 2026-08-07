@@ -1,0 +1,55 @@
+name: Marketing site
+
+# The site is deployed by Cloudflare Pages from main, not from here. This job
+# exists so a broken build is caught in the pull request rather than discovered
+# as a blank shopfront — Pages reports its failures somewhere nobody is looking.
+on:
+  push:
+    branches: [main]
+    paths: ["marketing/**", ".github/workflows/marketing.yml"]
+  pull_request:
+    paths: ["marketing/**", ".github/workflows/marketing.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: marketing
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: marketing/.nvmrc
+          cache: npm
+          cache-dependency-path: marketing/package-lock.json
+
+      # ci rather than install: the lockfile is the pinned tree, and a build
+      # that quietly resolves something else is not the build that was reviewed.
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # The whole argument for this site being static is that a crawler can read
+      # it. A stray `client:` directive or an accidental island would not fail
+      # the build, so it is asserted here instead.
+      - name: Assert the output is server-rendered HTML
+        run: |
+          test -f dist/index.html
+          if grep -rl '<script' dist/*.html; then
+            echo "::error::A page shipped JavaScript. This site is static on purpose — see marketing/README.md."
+            exit 1
+          fi
+          grep -q 'rel="canonical"' dist/index.html
+
+      # High-severity advisories in the tree that builds the public shopfront
+      # should behave like bundler-audit does for the app: fail, not warn.
+      - name: Audit dependencies
+        run: npm audit --audit-level=high

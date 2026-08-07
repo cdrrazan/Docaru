@@ -1,0 +1,70 @@
+---
+import "../styles/global.css"
+
+// Every page declares its own title, description and canonical. The canonical
+// matters more here than it usually would: this site and the Rails app are two
+// origins describing one product, and without it the app's own pages and these
+// would compete for the same queries.
+const { title, description, path } = Astro.props
+
+const APP = import.meta.env.PUBLIC_APP_URL || "https://app.docaru.com"
+const REPO = "https://github.com/cdrrazan/Docaru"
+const canonical = new URL(path, Astro.site ?? "https://docaru.com").toString()
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Docaru" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <meta name="theme-color" content="#1c5d4a" />
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to content</a>
+
+    <header class="masthead">
+      <div class="wrap">
+        <a class="brand" href="/">Docaru</a>
+        <nav aria-label="Main">
+          <a href="/security">Security</a>
+          <a href="/pricing">Pricing</a>
+          <a href="/self-host">Self-host</a>
+          {/* The playbooks and the calculator live in the app, and are the top
+              of the funnel rather than a feature of it. Linked out plainly. */}
+          <a href={`${APP}/playbooks`}>Playbooks</a>
+          <a class="btn btn-quiet" href={`${APP}/session/new`}>Sign in</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap" id="content" tabindex="-1">
+      <slot />
+    </main>
+
+    <footer class="site-foot">
+      <div class="wrap">
+        <p>
+          Docaru — a self-hosted, browser-encrypted vault for a household's documents.<br />
+          <span class="note">Nothing here is verified yet. Every renewal figure says so on its own page.</span>
+        </p>
+        <nav aria-label="Footer">
+          <a href="/security">Security</a>
+          <a href="/pricing">Pricing</a>
+          <a href="/self-host">Self-host</a>
+          <a href={REPO}>Source</a>
+          <a href={`${REPO}/blob/main/SECURITY.md`}>Report a vulnerability</a>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>

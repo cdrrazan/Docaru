@@ -1,0 +1,105 @@
+---
+import Base from "../layouts/Base.astro"
+
+const REPO = "https://github.com/cdrrazan/Docaru"
+---
+<Base
+  title="How the encryption works — Docaru"
+  description="Scans are encrypted in your browser with AES-GCM under a key we never receive. What we store is ciphertext with no filename. Here is exactly how, and what it costs you."
+  path="/security"
+>
+  <h1>How the encryption works</h1>
+
+  <p class="lede">
+    Written out in full, because "encrypted" is a word every service uses and almost none of them
+    mean this way. Everything below is checkable against
+    <a href={`${REPO}/blob/main/web/app/javascript/controllers/vault_controller.js`}>the source</a>.
+  </p>
+
+  <h2>What happens when you add a scan</h2>
+
+  <ol>
+    <li>Your browser resizes and re-encodes the image. A phone photo of a passport does not need to be twelve megabytes.</li>
+    <li>It encrypts the result with <strong>AES-GCM</strong>, using your vault key.</li>
+    <li>It uploads the ciphertext, a nonce, and a content type. Nothing else.</li>
+  </ol>
+
+  <p>
+    The filename is not sent. Neither is the plaintext size, nor anything derived from the contents.
+    There is no code path on our side that turns any of that back into a document, and adding one
+    would be a change you could see in the commit history.
+  </p>
+
+  <h2>Where the key lives</h2>
+
+  <p>
+    Your scans are encrypted under a random <strong>vault key</strong>, not under your passphrase
+    directly. That key is stored twice, wrapped two different ways:
+  </p>
+
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr><th>Wrapped under</th><th>Derived from</th><th>Which means</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Your passphrase</td>
+          <td>PBKDF2, 310,000 iterations, SHA-256</td>
+          <td>Normal unlocking</td>
+        </tr>
+        <tr>
+          <td>Your recovery code</td>
+          <td>PBKDF2 with a separate salt</td>
+          <td>Getting back in if you forget the passphrase</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Both wrappings are produced in your browser. We hold two blobs and neither key, so an operator, a
+    stolen backup and a court order all get the same thing: ciphertext.
+  </p>
+
+  <div class="panel panel-warn">
+    <p class="eyebrow">The part that is not reassuring</p>
+    <p style="margin:0">
+      Lose your passphrase <em>and</em> your recovery code and your scans are gone. Not
+      "gone pending a support ticket" — gone. We cannot reset what we do not have. This is the direct
+      cost of the guarantee above, and any service that offers you both a zero-knowledge promise and
+      a password reset is quietly not doing one of them.
+    </p>
+  </div>
+
+  <h2>What is not encrypted, and why</h2>
+
+  <p>
+    The document kind, the issuing country and the expiry date are stored in the clear, because the
+    server has to compute reminder dates from them and cannot do arithmetic on ciphertext. The
+    identifier — a passport number — and your notes are encrypted at rest with keys held by the
+    application.
+  </p>
+
+  <p>
+    One visible consequence: searching your vault covers the label, kind, country and person, and
+    deliberately not the identifier or the notes. A search that reached those would require the
+    server to read them. The interface says so rather than quietly returning nothing.
+  </p>
+
+  <h2>What this rules out</h2>
+
+  <p>
+    No full-text search inside your documents. No previews or thumbnails. No automatic categorising,
+    no OCR on our side, nothing described as smart. Every one of those features needs a copy of your
+    passport that we can open. That is the trade, and it is the whole product.
+  </p>
+
+  <h2>If you find something wrong</h2>
+
+  <p>
+    Report it privately through <a href={`${REPO}/security/advisories/new`}>GitHub's advisory form</a>
+    rather than opening a public issue. <a href={`${REPO}/blob/main/SECURITY.md`}>SECURITY.md</a> has
+    the details and the scope.
+  </p>
+</Base>
