@@ -99,22 +99,20 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_predicate Document.where(id: stranger.id), :exists?
   end
 
-  test "refuses to exceed the plan's document limit" do
-    household = households(:one)
-    household.update!(plan: "free")
-    household.documents.count.upto(19) do
-      members(:rajan).documents.create!(kind: "passport", issuing_country: "NP", expires_on: 2.years.from_now.to_date)
-    end
+  # Documents are not metered on any plan. A row recording that a marriage
+  # certificate exists costs nothing worth charging for, and refusing to accept
+  # one would be the vault declining to do its only job. Bytes are metered, and
+  # that is enforced where bytes arrive — see AttachmentsControllerTest.
+  test "records a document regardless of plan, because documents are not what costs" do
+    households(:one).update!(plan: "free")
 
-    assert_no_difference "Document.count" do
+    assert_difference "Document.count", 1 do
       post documents_path, params: { document: {
-        member_id: members(:rajan).id, kind: "passport", issuing_country: "NP",
-        expires_on: 2.years.from_now.to_date.to_s
+        member_id: members(:rajan).id, kind: "birth_certificate", issuing_country: "NP"
       } }
     end
 
-    assert_response :unprocessable_entity
-    assert_select ".errors", /plan covers/
+    assert_response :redirect
   end
 
   test "editing the expiry date clears sent reminders so the cascade reruns" do

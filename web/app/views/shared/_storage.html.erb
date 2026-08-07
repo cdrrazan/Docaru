@@ -1,0 +1,24 @@
+<%# The answer to the old objection against metering bytes — that nobody knows %>
+<%# how many megabytes a passport scan is. Nobody has to: the bar shows the %>
+<%# proportion, and the sentence under it converts what is left into the unit %>
+<%# somebody actually thinks in, which is scans. %>
+<% if household.storage_limit.infinite? %>
+  <p class="note">Storage: <%= number_to_human_size(household.storage_used) %> used, no limit.</p>
+<% else %>
+  <%# <progress> rather than a styled div: it is announced as a progress bar %>
+  <%# with its value, so this reads correctly without needing ARIA bolted on. %>
+  <div class="field">
+    <label for="storage-used">Storage</label>
+    <progress id="storage-used" max="100" value="<%= (household.storage_fraction * 100).round %>"
+              style="width:100%"></progress>
+    <p class="hint">
+      <%= number_to_human_size(household.storage_used) %> of
+      <%= number_to_human_size(household.storage_limit) %> used<%
+      %><% if household.storage_exhausted? %>.
+        <strong>Full.</strong> Nothing stored is affected and every reminder keeps working — you
+        cannot add new pages until there is room.
+      <% else %> — room for about <%= number_with_delimiter(household.scans_remaining) %> more scans.
+      <% end %>
+    </p>
+  </div>
+<% end %>

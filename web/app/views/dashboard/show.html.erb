@@ -139,14 +139,14 @@
   <h2>Household</h2>
   <p class="note">
     <%= household.name %> &middot; <%= pluralize(@members.size, "person") %> &middot;
-    <%= pluralize(@documents.size, "document") %> of
-    <%= household.document_limit.infinite? ? "unlimited" : household.document_limit %>
+    <%= pluralize(@documents.size, "document") %>
   </p>
+
+  <%= render "shared/storage", household: household %>
+
   <p>
     <%= link_to "Browse the vault", documents_path %>
     &middot; <%= link_to "Manage people", members_path %>
-    <% if household.can_add_document? %>
-      &middot; <%= link_to "Add a document", new_document_path %>
-    <% end %>
+    &middot; <%= link_to "Add a document", new_document_path %>
   </p>
 </section>

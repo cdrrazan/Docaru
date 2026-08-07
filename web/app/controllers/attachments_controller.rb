@@ -12,6 +12,15 @@ class AttachmentsController < ApplicationController
   def create
     @attachment = @document.attachments.new(attachment_params)
 
+    # Checked here rather than in a validation because the number that matters
+    # is the household's total, and the attachment does not know its household
+    # without walking two associations to find out. Checked at all because the
+    # byte count arrives from the browser, and a browser is free to lie about
+    # it — the stored blob is what costs, so the stored blob is what is counted.
+    unless household.can_store?(@attachment.byte_size)
+      return render json: { errors: [ storage_full_message ] }, status: :content_too_large
+    end
+
     if @attachment.save
       render json: { id: @attachment.id, page_no: @attachment.page_no }, status: :created
     else
@@ -47,5 +56,12 @@ class AttachmentsController < ApplicationController
 
   def attachment_params
     params.expect(attachment: [ :iv, :content_type, :byte_size, :page_no, :ciphertext ])
+  end
+
+  def storage_full_message
+    helpers.number_to_human_size(household.storage_limit).then do |limit|
+      "That would take you past your #{limit} of storage. " \
+        "Nothing already stored is affected — upgrade for more room, or remove a page you no longer need."
+    end
   end
 end

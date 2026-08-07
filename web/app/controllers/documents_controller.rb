@@ -39,13 +39,13 @@ class DocumentsController < ApplicationController
     @document.issuing_country ||= default_country
   end
 
+  # No count limit. A document with no scan attached costs a row, and refusing
+  # to record that a marriage certificate exists — which is the thing the vault
+  # is for — to protect a few kilobytes was the old cap solving the wrong
+  # problem. What costs money is bytes, and those are metered where they arrive,
+  # in AttachmentsController.
   def create
     @document = build_document
-
-    unless household.can_add_document?
-      @document.errors.add(:base, document_limit_message)
-      return render :new, status: :unprocessable_entity
-    end
 
     if @document.save
       redirect_to document_path(@document), notice: start_notice(@document)
@@ -116,10 +116,5 @@ class DocumentsController < ApplicationController
 
   def default_country
     household.documents.order(created_at: :desc).first&.issuing_country
-  end
-
-  def document_limit_message
-    "Your plan covers #{household.document_limit} documents. " \
-      "Upgrade for unlimited — every reminder you already have keeps working either way."
   end
 end

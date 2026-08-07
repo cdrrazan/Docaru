@@ -1,35 +1,53 @@
 <% content_for :title, "Pricing" %>
-<% content_for :description, "Free for one person and twenty documents. Alerts and renewal playbooks are never paywalled." %>
+<% content_for :description, "Free for one person and a gigabyte. Documents are unlimited on every plan, and alerts and renewal playbooks are never paywalled." %>
 
 <h1>Pricing</h1>
 
 <p class="lede">
-  Storage is what costs us money, so storage is what the plans limit.
+  Storage is what costs us money, so storage is the only thing the plans limit. Documents are
+  unlimited everywhere — recording that a marriage certificate exists is the point of the thing.
   <strong>Alerts and playbooks are never paywalled</strong> — putting the safety feature behind a
   card form would poison the trust the whole thing rests on.
 </p>
 
+<%# Annual rather than monthly, and not to look cheaper. A vault gets opened %>
+<%# three times a year, and billing monthly for something you rarely touch %>
+<%# gives twelve occasions a year to wonder whether you still need it. The %>
+<%# rhythm this is bought on is the rhythm it should be paid on. %>
 <div class="cards">
   <div class="card">
     <h3>Free</h3>
     <p class="headline">£0</p>
     <ul class="plain">
       <li>1 person</li>
-      <li>20 documents</li>
+      <li><strong>1 GB</strong> — around 4,000 scans</li>
+      <li>Unlimited documents</li>
       <li>Every alert</li>
       <li>Every renewal playbook</li>
-      <li>Encrypted scans</li>
+      <li>Browser-side encryption</li>
     </ul>
   </div>
 
   <div class="card">
     <h3>Household</h3>
-    <p class="headline">~£4<span class="note">/month</span></p>
+    <p class="headline">~£30<span class="note">/year</span></p>
     <ul class="plain">
       <li>Up to 6 people</li>
+      <li><strong>25 GB</strong></li>
       <li>Unlimited documents</li>
       <li>Shared alerts across the household</li>
-      <li>Priority notification channels</li>
+      <li>Everything in Free</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Archive</h3>
+    <p class="headline">~£70<span class="note">/year</span></p>
+    <ul class="plain">
+      <li>Up to 6 people</li>
+      <li><strong>100 GB</strong></li>
+      <li>For decades of scanned paper</li>
+      <li>Everything in Household</li>
     </ul>
   </div>
 
@@ -38,6 +56,7 @@
     <p class="headline">£0</p>
     <ul class="plain">
       <li>Everything, on your own machine</li>
+      <li>Storage is whatever your disk is</li>
       <li>One container</li>
       <li>Your data never touches us</li>
     </ul>
@@ -46,11 +65,32 @@
 </div>
 
 <section>
+  <h2>Why pay us rather than use a cloud drive</h2>
+  <p>
+    Because we cannot read your files, and Google can read theirs. Scans are encrypted in your
+    browser with a key derived from a passphrase we never receive; what reaches us is ciphertext
+    with no filename attached. That is not a promise about our conduct, it is a fact about the
+    code — and <a href="https://github.com/cdrrazan/Docaru">the code is public</a>, so you can
+    check rather than trust.
+  </p>
+  <p>
+    It is also why we cannot offer search inside your documents, previews, or anything that reads
+    them. Those features need a copy of your passport we are able to open. That trade is the
+    product.
+  </p>
+  <p class="note">
+    If you can run a container, self-hosting is stronger still, and it is free. We would rather say
+    so than pretend otherwise.
+  </p>
+</section>
+
+<section>
   <h2>What happens if you stop paying</h2>
   <p>
-    You keep every reminder for every document you already have. You lose the ability to add more
-    people and more documents until you are back under the free limits. Nobody misses a visa
-    deadline over a failed card payment — that would be the product failing at the only job it has.
+    You keep every document, every scan and every reminder. Nothing is deleted, nothing stops being
+    watched, and no file becomes unreadable. What you lose is room to add more, until you are back
+    under the free limits or back on a paid plan. Nobody misses a visa deadline over a failed card
+    payment — that would be the product failing at the only job it has.
   </p>
 </section>
 
@@ -63,6 +103,8 @@
       <%= pluralize(@household.members.count, "person") %>.
     </p>
 
+    <%= render "shared/storage", household: @household %>
+
     <% if (subscription = @household.subscription)&.troubled? %>
       <div class="banner banner-warn">
         <strong>There is a problem with the payment for this household.</strong>
@@ -72,10 +114,10 @@
       </div>
     <% end %>
 
-    <% if @household.over_document_limit? || @household.over_member_limit? %>
+    <% if @household.over_storage_limit? || @household.over_member_limit? %>
       <div class="banner">
         This household is above the free limits. Nothing has been deleted and everything is still
-        watched — you cannot add anything new until you are back under, or back on the household
+        watched — you cannot add new scans or people until you are back under, or back on a paid
         plan.
       </div>
     <% end %>

@@ -39,6 +39,43 @@ class AttachmentsControllerTest < ActionDispatch::IntegrationTest
     assert_predicate Attachment.last.ciphertext, :attached?
   end
 
+  # Reaching a gigabyte honestly would take a hundred rows, because one page is
+  # capped at 10MB. The subject here is the household total, not the per-page
+  # rule that is tested elsewhere, so the state is constructed rather than
+  # accumulated.
+  def fill_storage_to(bytes)
+    attachment = @document.attachments.new(
+      iv: Base64.strict_encode64(SecureRandom.bytes(12)), content_type: "image/webp",
+      byte_size: bytes, page_no: 99
+    )
+    attachment.save!(validate: false)
+  end
+
+  # Bytes are the thing that costs money, so bytes are the thing metered — and
+  # metered here, where they arrive, rather than at the document that holds them.
+  test "refuses a page that would cross the household's storage ceiling" do
+    households(:one).update!(plan: "free")
+    fill_storage_to(1.gigabyte)
+
+    assert_no_difference "Attachment.count" do
+      post document_attachments_path(@document), params: valid_params
+    end
+
+    assert_response :content_too_large
+    assert_match(/past your/, JSON.parse(response.body)["errors"].first)
+  end
+
+  test "a page that fits is accepted right up to the ceiling" do
+    households(:one).update!(plan: "free")
+    fill_storage_to(1.gigabyte - 4096)
+
+    assert_difference "Attachment.count", 1 do
+      post document_attachments_path(@document), params: valid_params
+    end
+
+    assert_response :created
+  end
+
   # The whole promise. Anything the server stores about the file must be
   # useless for working out what the document says.
   test "stores no plaintext and no filename" do

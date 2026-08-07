@@ -1,17 +1,43 @@
 # frozen_string_literal: true
 
 class Household < ApplicationRecord
-  PLANS = %w[free household self_hosted].freeze
+  PLANS = %w[free household archive self_hosted].freeze
 
-  # Free tier caps documents rather than megabytes. A family hitting the cap is
-  # the upgrade trigger, and counting documents is something a user can predict
-  # — nobody knows how many megabytes a passport scan is.
-  DOCUMENT_LIMITS = { "free" => 20, "household" => Float::INFINITY, "self_hosted" => Float::INFINITY }.freeze
-  MEMBER_LIMITS = { "free" => 1, "household" => 6, "self_hosted" => Float::INFINITY }.freeze
+  # Capacity is bytes, not documents.
+  #
+  # It used to be documents, on the reasoning that a count is something a person
+  # can predict and megabytes are not. True, and beside the point: storage is
+  # what a hosted instance actually pays for, and the two numbers had drifted
+  # far enough apart to matter. Twenty documents was the free cap while a single
+  # document could carry a hundred pages at ten megabytes each — a free tier
+  # whose real ceiling was around twenty gigabytes, and a pricing page claiming
+  # to limit storage while limiting something else entirely.
+  #
+  # The predictability objection is answered by the interface rather than by the
+  # unit: a used-of-total bar, and the count of typical scans that fits. That is
+  # how every cloud drive solves it, because it works.
+  STORAGE_LIMITS = {
+    "free" => 1.gigabyte,
+    "household" => 25.gigabytes,
+    "archive" => 100.gigabytes,
+    "self_hosted" => Float::INFINITY
+  }.freeze
+
+  MEMBER_LIMITS = {
+    "free" => 1,
+    "household" => 6,
+    "archive" => 6,
+    "self_hosted" => Float::INFINITY
+  }.freeze
+
+  # Roughly what a scan costs after the browser has resized and re-encoded it.
+  # Used only to turn bytes into a sentence a person can act on.
+  TYPICAL_SCAN_BYTES = 250.kilobytes
 
   has_many :users, dependent: :destroy
   has_many :members, dependent: :destroy
   has_many :documents, through: :members
+  has_many :attachments, through: :documents
   has_one :subscription, dependent: :destroy
 
   has_secure_token :vault_salt, length: 24
@@ -33,13 +59,41 @@ class Household < ApplicationRecord
   validates :wrapped_key_iv, :recovery_wrapped_key_iv,
             format: { with: NONCE, message: "is not a valid nonce" }, allow_nil: true
 
-  def document_limit = DOCUMENT_LIMITS.fetch(plan, 20)
+  def storage_limit = STORAGE_LIMITS.fetch(plan, STORAGE_LIMITS.fetch("free"))
   def member_limit = MEMBER_LIMITS.fetch(plan, 1)
 
-  def documents_remaining = [ document_limit - documents.count, 0 ].max
+  # Summed rather than counted from a column kept up to date by callbacks. A
+  # denormalised total that drifts is worse than one query per page: it either
+  # bills somebody for space they are not using or lets them past a limit they
+  # have already passed, and both are discovered late.
+  def storage_used = attachments.sum(:byte_size)
+
+  def storage_remaining = [ storage_limit - storage_used, 0 ].max
+
+  # Nil when unlimited, so a view can ask for the bar and get told there is
+  # nothing to draw rather than dividing by infinity.
+  def storage_fraction
+    return nil if storage_limit.infinite?
+
+    [ storage_used.to_f / storage_limit, 1.0 ].min
+  end
+
+  # Asked before an upload, with the size of what is about to arrive. Checked
+  # server-side because the browser reports its own byte count.
+  def can_store?(bytes) = storage_used + bytes.to_i <= storage_limit
+
+  def storage_exhausted? = storage_remaining.zero?
+
+  # "About 400 more scans" is a number somebody can act on; "738 MB remaining"
+  # is one they have to translate first.
+  def scans_remaining
+    return nil if storage_limit.infinite?
+
+    (storage_remaining / TYPICAL_SCAN_BYTES).floor
+  end
+
   def members_remaining = [ member_limit - members.count, 0 ].max
 
-  def can_add_document? = documents.count < document_limit
   def can_add_member? = members.count < member_limit
 
   # Deliberately not a limit check, and deliberately not a billing check.
@@ -51,8 +105,9 @@ class Household < ApplicationRecord
 
   # After a downgrade a household can be over its limit and stay there: nothing
   # is deleted and nothing stops being watched. What lapsing costs is the
-  # ability to add more — capacity, not safety.
-  def over_document_limit? = documents.count > document_limit
+  # ability to add more — capacity, not safety. Deleting somebody's birth
+  # certificate because a card expired would be theft dressed as billing.
+  def over_storage_limit? = storage_used > storage_limit
   def over_member_limit? = members.count > member_limit
 
   # Generated lazily so existing households pick one up on first vault use.
