@@ -164,9 +164,22 @@ Reminder = Document.expires_on
 
 | Tier | Price | Contents |
 |---|---|---|
-| Free | $0 | 1 person, 20 documents, all alerts, all renewal playbooks |
-| Household | ~$4/mo or $36/yr | Unlimited documents, up to 6 members, shared alerts, priority notification channels |
-| Self-hosted | $0 | Full features, own infrastructure |
+| Free | $0 | 1 person, 1 GB, unlimited documents, all alerts, all renewal playbooks |
+| Household | $36/yr | Up to 6 people, 25 GB, shared alerts across the household |
+| Archive | $84/yr | Up to 6 people, 100 GB, for decades of scanned paper |
+| Self-hosted | $0 | Full features, own infrastructure, storage is whatever the disk is |
+
+Two revisions to what this section originally said, both from the repositioning:
+
+- **Capacity is bytes, not documents.** A count is the limit a deadline tracker wants; storage is what
+  a hosted instance actually pays for. Documents are unlimited on every tier, because refusing to
+  record that a marriage certificate exists — to save a database row — is the vault declining its own
+  job.
+- **Annual, not monthly.** A vault is opened about three times a year. Billing monthly for that offers
+  twelve occasions a year to reconsider it, which is a worse deal for both sides than paying once.
+
+Priced in USD because the buyer is usually not in the country that issued the document. Paddle
+localises at checkout, so these are reference prices rather than what any given card is charged.
 
 Alerts and playbooks are **never** paywalled. Paywalling the safety feature poisons the trust position that the whole product rests on, and trust is what open source buys us.
 

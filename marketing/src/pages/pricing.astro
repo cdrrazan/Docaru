@@ -7,28 +7,34 @@ const APP = import.meta.env.PUBLIC_APP_URL || "https://app.docaru.com"
 // app's own /plan page is the one a signed-in household sees, and it reads the
 // real numbers; this page is the shopfront. If the two ever disagree, the app
 // is right and this is stale.
+// Priced in USD because the buyer is rarely in the country that issued the
+// document — a Nepali passport renewed from Doha, Kuala Lumpur or Manchester.
+// USD is the currency that reads as a number rather than as a conversion in all
+// three. Paddle localises at the checkout anyway, so this is the reference
+// price, not what the card is charged in.
 const plans = [
   {
     name: "Free",
-    price: "£0",
+    price: "$0",
     per: "",
     lines: ["1 person", "1 GB — around 4,000 scans", "Unlimited documents", "Every alert", "Every renewal playbook"]
   },
   {
     name: "Household",
-    price: "~£30",
+    price: "$36",
     per: "/year",
+    featured: true,
     lines: ["Up to 6 people", "25 GB", "Unlimited documents", "Shared alerts across the household", "Everything in Free"]
   },
   {
     name: "Archive",
-    price: "~£70",
+    price: "$84",
     per: "/year",
     lines: ["Up to 6 people", "100 GB", "For decades of scanned paper", "Everything in Household"]
   },
   {
     name: "Self-hosted",
-    price: "£0",
+    price: "$0",
     per: "",
     lines: ["Everything, on your own machine", "Storage is whatever your disk is", "One container", "Your data never touches us"]
   }
