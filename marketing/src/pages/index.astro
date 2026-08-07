@@ -1,96 +1,218 @@
 ---
 import Base from "../layouts/Base.astro"
+import Icon from "../components/Icon.astro"
 
 const APP = import.meta.env.PUBLIC_APP_URL || "https://app.docaru.com"
 
-// The old homepage opened "Every document you own has a deadline. We tell you
-// which one is next." That sold the layer on top. Most of what a household
-// keeps — a birth certificate, a degree, a land deed — has no deadline at all
-// and exists in here so it can be reached from another city. Storage is the
-// product; renewals are what makes it worth opening.
-const reasons = [
+// Written for the person, not the reviewer. The earlier version of this page
+// explained the architecture; this one describes the afternoon somebody loses
+// to a document in a cupboard in another country, and lets the architecture be
+// the reason to believe it rather than the pitch.
+const features = [
   {
-    title: "We cannot read your files",
-    body: "Scans are encrypted in your browser before upload, with a key derived from a passphrase that never reaches us. What we store is ciphertext with no filename attached. That is not a promise about our conduct — it is a property of the code, and the code is public."
+    icon: "lock",
+    title: "Nobody here can open them",
+    body: "Your files are locked in your browser before they are uploaded, with a key we never receive. We hold the locked version and no way to unlock it — not for an employee, not for an advertiser, not for a court."
   },
   {
-    title: "Your family's documents, not just yours",
-    body: "One vault, everyone in the household. Your mother's citizenship certificate is where you can find it at 2am from another timezone, instead of in a drawer thirty kilometres away."
+    icon: "people",
+    title: "The whole family, one place",
+    body: "Your mother's citizenship certificate, your brother's licence, your own degree. Everyone's papers in one vault, so finding one does not start with a phone call to somebody who is asleep."
   },
   {
-    title: "Run it yourself, or let us run it",
-    body: "One container and a database. Self-hosting is the stronger option and it is free — we would rather say so than pretend our servers are safer than yours."
+    icon: "globe",
+    title: "Reachable from anywhere",
+    body: "A phone in Doha, a borrowed laptop in Manchester, a cybercafé in Kuala Lumpur. If you can open a browser, you can reach your documents."
   },
   {
-    title: "It knows which ones expire",
-    body: "For the documents that do have deadlines, it works out the date you have to start — counting back through processing times and the prerequisites you have not ordered yet — and reminds you then, not when it expires."
+    icon: "clock",
+    title: "It knows what expires, and when to start",
+    body: "Not \"your passport expires in March\" — that is a calendar reminder and it comes too late. It says start in November, because renewing from where you are takes ten weeks and needs a police certificate you have not ordered yet."
+  },
+  {
+    icon: "server",
+    title: "Run it on your own machine",
+    body: "One container. No account with us, no monthly fee, no trust required at all. It is the stronger option and we would rather say so."
+  },
+  {
+    icon: "card",
+    title: "Free to start, and free to leave",
+    body: "One person and a gigabyte, no card. Your files are yours: download them whenever you like, and nothing is held back if you stop paying."
+  }
+]
+
+const faqs = [
+  {
+    q: "What happens if I forget my passphrase?",
+    a: "You use the recovery code you were given when you set the vault up — it opens the same files and lets you choose a new passphrase. If you have lost both, your scans cannot be recovered by anyone, including us. That is the direct cost of nobody being able to read them, and any service offering you both a zero-knowledge promise and a password reset is quietly not doing one of them."
+  },
+  {
+    q: "How is this different from Google Drive or iCloud?",
+    a: "They can read your files. Not as an accusation — it is how the features work, because search, previews and automatic sorting all need the contents. We cannot, so we do not offer those. What you get instead is a guarantee that survives a subpoena, a data breach and a change of ownership."
+  },
+  {
+    q: "Do I have to pay to get the renewal reminders?",
+    a: "No. Reminders and renewal guides are free on every plan, forever, and they keep working even if a payment fails. Somebody whose card bounces while they are abroad is exactly the person most likely to need the alert."
+  },
+  {
+    q: "Is my passport number encrypted too?",
+    a: "Yes, along with your notes. The document type, issuing country and expiry date are stored readable, because the server has to do arithmetic on those dates to work out when to warn you. Everything you scan is encrypted before it leaves your device."
+  },
+  {
+    q: "What if you go out of business?",
+    a: "The whole thing is open source and you can run it yourself today. Your files are encrypted with your key, not ours, so a copy of the data without us is still a copy that works."
+  },
+  {
+    q: "Which countries does this work for?",
+    a: "Storing documents works for every country. The renewal timings currently cover Nepal, with guides for renewing from the UK, US, Australia and Qatar. Everything else is stored and searchable, just without a start-by date."
   }
 ]
 ---
 <Base
-  title="Docaru — the documents you will not put in Google Drive"
-  description="A self-hosted, browser-encrypted vault for your household's documents, reachable from anywhere — that also tells you when the ones with deadlines need renewing."
+  title="Docaru — your family's documents, safe and reachable"
+  description="An encrypted vault for the documents you would never put in Google Drive — your passport, your certificates, your family's papers. Reachable from anywhere, and it tells you when the ones with deadlines need renewing."
   path="/"
 >
-  <h1>The documents you will not<br />put in Google&nbsp;Drive.</h1>
+  <section class="hero">
+    <h1>Your family's documents, wherever you are.</h1>
 
-  <p class="lede">
-    Your citizenship certificate, your degree, the land deed, your mother's passport. Encrypted in
-    your browser, stored where nobody — including us — can open them, and reachable from wherever
-    you happen to be when somebody asks for a copy.
-  </p>
-
-  <div class="actions">
-    <a class="btn" href={`${APP}/registration/new`}>Create a vault</a>
-    <a class="btn btn-quiet" href="/self-host">Or run it yourself</a>
-  </div>
-
-  <p class="note">Free for one person and a gigabyte. No card.</p>
-
-  <div class="panel">
-    <p class="eyebrow">The problem, concretely</p>
-    <p style="margin:0">
-      You are in Doha. A visa application wants your birth certificate and your father's citizenship
-      certificate. Both are in a folder in a cupboard in Kathmandu. Somebody has to go and find them,
-      photograph them badly, and send them over WhatsApp — where they will sit forever, in a chat, on
-      a server you do not control.
+    <p class="lede">
+      Passports, certificates, deeds — locked in your browser so nobody else can open them, and
+      there when you need them at 2am in another country.
     </p>
+
+    <div class="actions">
+      <a class="btn" href={`${APP}/registration/new`}>Create your vault — free</a>
+      <a class="btn btn-quiet" href="/self-host">Or run it yourself</a>
+    </div>
+
+    <ul class="trust">
+      <li><Icon name="check" size={16} />No card needed</li>
+      <li><Icon name="check" size={16} />1 GB free, forever</li>
+      <li><Icon name="check" size={16} />Open source</li>
+      <li><Icon name="check" size={16} />We cannot read your files</li>
+    </ul>
+  </section>
+
+  <div class="scenario">
+    <p><strong>You are in Doha. The visa office wants your birth certificate by Thursday.</strong></p>
+    <p>
+      It is in a folder, in a cupboard, in Kathmandu. So you call home, and somebody goes looking,
+      and photographs it badly, and sends it over WhatsApp — where it stays forever, in a chat, on a
+      server you do not control. Then in April you find out the passport you were going to use
+      expired while you were dealing with all this.
+    </p>
+    <p class="note" style="margin-top:1rem">Both of those are the same problem. This fixes both.</p>
   </div>
 
-  <h2>Why this rather than a cloud drive</h2>
+  <h2>What you get</h2>
 
   <div class="cards">
-    {reasons.map((reason) => (
-      <div class="card">
-        <h3>{reason.title}</h3>
-        <p class="note">{reason.body}</p>
+    {features.map((feature) => (
+      <div class="card feature">
+        <span class="icon"><Icon name={feature.icon} /></span>
+        <div>
+          <h3>{feature.title}</h3>
+          <p class="note">{feature.body}</p>
+        </div>
       </div>
     ))}
   </div>
 
-  <h2>The renewal layer</h2>
+  <h2>How it works</h2>
 
-  <p>
-    A calendar reminder says "passport expires 14 March". It does not say "start in November, because
-    renewing from abroad takes ten weeks and needs a police certificate you have not ordered yet."
-    The failure is not memory. It is lead time.
-  </p>
+  <ol class="steps">
+    <li>
+      <div>
+        <strong>Photograph the document</strong>
+        <span class="note">Your phone camera is fine. It is resized and locked on your device before anything is sent.</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <strong>Add who it belongs to, and when it expires</strong>
+        <span class="note">Or leave the date blank — most documents never expire, and those just sit there waiting for the day you need them.</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <strong>Forget about it</strong>
+        <span class="note">Search by name or document when you need one. For anything with a deadline, we work out the date you have to start and tell you then.</span>
+      </div>
+    </li>
+  </ol>
 
-  <p>
-    For documents that expire, Docaru computes the date you have to <em>start</em> — from the renewal
-    window, the worst-case processing time, and the lead time on every prerequisite — and reminds you
-    then. The rules behind it are
-    <a href="https://github.com/cdrrazan/Docaru/tree/main/rules">a public dataset</a>, so nobody has
-    to trust us about a number they can check themselves.
-  </p>
+  <h2>Compared with a cloud drive</h2>
 
-  <div class="actions">
-    <a class="btn btn-quiet" href={`${APP}/when-to-start`}>Work out when to start &rarr;</a>
-    <a class="btn btn-quiet" href={`${APP}/playbooks`}>Browse the playbooks</a>
+  <div class="scroll" tabindex="0">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>&nbsp;</th>
+          <th>Docaru</th>
+          <th>Google Drive, iCloud, Dropbox</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Can the company read your files?</td>
+          <td class="yes">No</td>
+          <td class="no">Yes</td>
+        </tr>
+        <tr>
+          <td>Readable if their database leaks?</td>
+          <td class="yes">No</td>
+          <td class="no">Yes</td>
+        </tr>
+        <tr>
+          <td>Knows a passport needs renewing</td>
+          <td class="yes">Yes</td>
+          <td class="no">No</td>
+        </tr>
+        <tr>
+          <td>Shared with your household</td>
+          <td class="yes">Yes</td>
+          <td class="no">Folder sharing</td>
+        </tr>
+        <tr>
+          <td>Search inside documents</td>
+          <td class="no">No — we cannot read them</td>
+          <td class="yes">Yes</td>
+        </tr>
+        <tr>
+          <td>Run it on your own machine</td>
+          <td class="yes">Yes, free</td>
+          <td class="no">No</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <p class="note">
-    Both are free and need no account. Reminders are never paywalled either — putting the safety
-    feature behind a card form would poison the trust the whole thing rests on.
+    The one row we lose is the honest cost of the rest.
+    <a href="/security">Here is exactly how the encryption works</a>.
   </p>
+
+  <h2>Questions people ask first</h2>
+
+  <div class="faq">
+    {faqs.map((faq) => (
+      <details>
+        <summary>{faq.q}</summary>
+        <p>{faq.a}</p>
+      </details>
+    ))}
+  </div>
+
+  <section class="cta">
+    <h2>Put the cupboard on the internet, safely.</h2>
+    <p class="note">Free for one person and a gigabyte. Nothing to install, and nothing we can read.</p>
+    <div class="actions">
+      <a class="btn" href={`${APP}/registration/new`}>Create your vault</a>
+      <a class="btn btn-quiet" href="/pricing">See pricing</a>
+    </div>
+    <ul class="trust">
+      <li><Icon name="check" size={16} />Reminders are never paywalled</li>
+    </ul>
+  </section>
 </Base>

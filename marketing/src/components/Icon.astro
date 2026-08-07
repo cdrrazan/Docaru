@@ -1,0 +1,57 @@
+---
+// Inline SVG, drawn here rather than fetched from an icon CDN — the site makes
+// no third-party requests, and CI fails the build if one appears. Each path is
+// stroke-only so it inherits `currentColor` and works in both themes without a
+// second copy.
+//
+// aria-hidden throughout: every icon on this site sits next to the words it
+// illustrates, so announcing it would repeat the heading a screen reader has
+// already read.
+const { name, size = 20 } = Astro.props
+
+const paths = {
+  lock: [
+    "M5 11V8a5 5 0 0 1 10 0v3",
+    "M4 11h12v8H4z"
+  ],
+  people: [
+    "M7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z",
+    "M1 18c0-3 2.7-5 6-5s6 2 6 5",
+    "M14 5.2a3 3 0 0 1 0 5.6",
+    "M15.5 13.4c2 .7 3.5 2.3 3.5 4.6"
+  ],
+  server: [
+    "M3 4h14v5H3z",
+    "M3 11h14v5H3z",
+    "M6 6.5h.01",
+    "M6 13.5h.01"
+  ],
+  clock: [
+    "M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z",
+    "M10 5.5V10l3 1.8"
+  ],
+  check: ["M4 10.5 8 14.5 16 5.5"],
+  globe: [
+    "M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z",
+    "M2 10h16",
+    "M10 2a12 12 0 0 1 0 16 12 12 0 0 1 0-16Z"
+  ],
+  card: ["M2 5h16v10H2z", "M2 8.5h16", "M5 12h3"]
+}
+
+const d = paths[name] ?? []
+---
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 20 20"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.6"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+>
+  {d.map((path) => <path d={path} />)}
+</svg>

@@ -54,7 +54,8 @@ const plans = [
 
   <div class="cards">
     {plans.map((plan) => (
-      <div class="card">
+      <div class={plan.featured ? "card card-featured" : "card"}>
+        {plan.featured && <span class="tag">Most families</span>}
         <h3>{plan.name}</h3>
         <p class="headline">{plan.price}<span class="per">{plan.per}</span></p>
         <ul>{plan.lines.map((line) => <li>{line}</li>)}</ul>
@@ -66,6 +67,11 @@ const plans = [
     <a class="btn" href={`${APP}/registration/new`}>Start free</a>
     <a class="btn btn-quiet" href="/self-host">Self-host instead</a>
   </div>
+
+  <p class="note">
+    Prices are in US dollars. Paddle handles the checkout and will show the total in your own
+    currency with any local tax already added, so what you are quoted is what you pay.
+  </p>
 
   <h2>Billed yearly, on purpose</h2>
   <p>
